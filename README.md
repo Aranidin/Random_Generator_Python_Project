@@ -39,7 +39,8 @@ The data will be sourced from open datasets:
 * The system can visualize the sequence as a linear  or a plasmid map.
   
 * Visualization for binding of primer on DNA
-
+## Timeline
+![Image off the project timeline](timeline.png)
 ## Group Details
 Group name: Random_Generator
 Group code: G05
