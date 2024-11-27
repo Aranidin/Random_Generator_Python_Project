@@ -14,10 +14,11 @@ The data will be sourced from open datasets:
 * NCBI (Human Reference Genome)
 
 ### Input Data
-* The system must be able to read input text data/ data from a text file containing DNA sequence of interest either as a 5’- or 3’-strand, and as a plasmid, or as linear DNA
-* The system can automatically annotate widely-known consensus sequences/restriction sites/reporter genes/purification tags/
+* The system must be able to read input text data/ data from a text file containing DNA sequence of interest either as a 5’- or 3’-strand, as a plasmid, or as linear DNA 
+* The system can automatically annotate widely-known consensus sequences/restriction sites/reporter genes/purification tags
 * The system allows manual annotations of genes/sequences
 * The system can translate the DNA sequence to encoded amino acid (AA) sequence
+* The system can find open reading frames in the DNA
 * The system provides the possibility to import data from data banks (NCBI)
 
 ### Data Storage and Handling
@@ -25,10 +26,11 @@ The data will be sourced from open datasets:
 
 ### Statistical analysis
 * Statistics concerning the DNA/AA sequence:
-  * The amino acid sequence has statistics about pI of the protein, AA composition in %, molecular weight, …
+  * The amino acid sequence has statistics about pI of the protein, AA composition in %, molecular weight, and enzyme restriction sites 
   * GC content in DNA
 * Primer design 
   * Annealing temperature
+  * enzyme restriction sites in DNA
 
 * Statistics concerning the platform:
   * Popular DNA sequences (most uploaded or referenced) 
