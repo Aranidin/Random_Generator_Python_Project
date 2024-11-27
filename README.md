@@ -36,7 +36,10 @@ The data will be sourced from open datasets:
   * Statistics of user number per day/hour
 
 ### Visualization
-* The system can visualize the sequence as a linear  or a plasmid map.
+* The system can visualize the sequence as a linear 
+  ![Linear DNA map with annotations](linear_DNA_annot.png)
+   or a plasmid map.
+  ![Plasmid DNA map with annotations](plasmid_annot.png)
   
 * Visualization for binding of primer on DNA
 ## Timeline
