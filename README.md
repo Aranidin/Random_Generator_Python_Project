@@ -38,8 +38,11 @@ The data will be sourced from open datasets:
 ### Visualization
 * The system can visualize the sequence as a linear 
   ![Linear DNA map with annotations](linear_DNA_annot.png)
-   or a plasmid map.
-  ![Plasmid DNA map with annotations](plasmid_annot.png)
+
+  or a plasmid map.
+  
+  <img src="plasmid_annot.png" width="500" height="400"/>
+  
   
 * Visualization for binding of primer on DNA
 ## Timeline
