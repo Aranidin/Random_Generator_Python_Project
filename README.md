@@ -6,6 +6,7 @@ To achieve the goal the following parts will be implemented:
 * Input: Accept DNA sequences (text/file), auto/manual annotate, translate to AA, and import from NCBI.
 * Statistics: pI, AA composition, GC content, primer annealing temp, and user/platform trends.
 * Visualization: Linear/plasmid maps and primer binding sites.
+* Web-based frontend
   
 ## Functionalities
 ### Data Sources
@@ -31,6 +32,7 @@ The data will be sourced from open datasets:
 * Primer design 
   * Annealing temperature
   * enzyme restriction sites in DNA
+  * results downloadable as csv 
 
 * Statistics concerning the platform:
   * Popular DNA sequences (most uploaded or referenced) 
@@ -47,6 +49,7 @@ The data will be sourced from open datasets:
   
   
 * Visualization for binding of primer on DNA
+* Download images as .png format
 ## Timeline
 ![Image off the project timeline](timeline.png)
 ## Group Details
