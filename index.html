@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DNA Features Viewer</title>
+    <script>
+        function toggleForms(formToShow) {
+            const forms = ['NCBI_Form', 'ManualForm']; // List all form IDs
+            forms.forEach(form => {
+                const element = document.getElementById(form);
+                if (form === formToShow) {
+                    element.style.display = 'block'; // Show the selected form
+                } else {
+                    element.style.display = 'none'; // Hide all others
+                }
+            });
+        }
+    </script>
+</head>
+<body>
+    <h1>Insert your DNA</h1>
+    
+    <input type="radio" id="NCBI" name="dna_import" onclick="toggleForms('NCBI_Form')" value="NCBI">
+    <label for="NCBI">Import the sequence from NCBI</label><br>
+    
+    <div id="NCBI_Form" style="display: none;">
+        <form method="post">
+            <label for="email">Email:</label>
+            <input type="text" id="email" name="email"><br>
+            <label for="access_n">Accession Number:</label>
+            <input type="text" id="access_n" name="access_n"><br>
+            <input type="submit" value="Submit">
+        </form>
+    </div>
+    
+    <input type="radio" id="Manual" name="dna_import" onclick="toggleForms('ManualForm')" value="Manual">
+    <label for="Manual">Insert your DNA-Sequence</label><br>
+    
+    <div id="ManualForm" style="display: none;">
+        <form method="post">
+            <textarea name="textarea" rows="10" cols="50" placeholder="Enter your DNA sequence here..."></textarea><br>
+            <input type="submit" value="Submit">
+        </form>
+    </div>
+</body>
+</html>
