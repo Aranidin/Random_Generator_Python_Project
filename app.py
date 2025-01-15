@@ -4,6 +4,7 @@ from bokeh.embed import components, file_html
 from bokeh.resources import CDN
 from Bio import SeqIO
 import os
+import matplotlib
 app = Flask(__name__)
 app.config["UPLOAD_FOLDER"] = "uploads" #folder for file uploads
 app.secret_key = "thinkofsomethingsecret" #secret key
@@ -11,6 +12,7 @@ app.secret_key = "thinkofsomethingsecret" #secret key
 @app.route('/', methods=['GET', 'POST'])
 def home():
     record_script, record_div = None, None  # Initialize variables to prevent errors if no plot
+    dna_input = None
 
     if request.method == 'POST':
         #NCBI form
@@ -18,14 +20,16 @@ def home():
         accession_number = request.form.get("access_n")
         fasta_file = request.files.get("fasta_file")
 
-        #check for file upload
+        #check for file upload PROBLEM!
         if fasta_file:
+            print(f"File received: {fasta_file.filename}")  # Debugging log to check if file is received
             file_path = os.path.join(app.config["UPLOAD_FOLDER"], fasta_file.filename)
             fasta_file.save(file_path)
 
             #read sequence from fasta file
             dna_input = read_fasta(file_path)
             flash("Fasta file upload successful!", "validation")
+            print("Fasta file uploaded successfully")  # Debugging log to confirm flash and save
 
         #manual DNA sequence input
         if not dna_input:
@@ -51,22 +55,24 @@ def home():
             #max input of 1000 bases
             if len(dna_input) > 1000:
                 flash("Only sequences with a max. length of 1000 allowed!")
+            else:
+                flash("Success!", "validation")
 
-        return render_template('index.html')
-        print(f"Email: {email}, Accession Number: {accession_number}, DNA Input: {dna_input}")
 
-        # Example features for the DNA sequence visualization
-        features = [
-            GraphicFeature(start=0, end=20, strand=+1, color="#ffd700", label="Small feature"),
-            GraphicFeature(start=20, end=500, strand=+1, color="#ffcccc", label="Gene 1"),
-            GraphicFeature(start=400, end=700, strand=-1, color="#cffccc", label="Gene 2"),
-            GraphicFeature(start=600, end=900, strand=+1, color="#ccccff", label="Gene 3")
-        ]
-        record = GraphicRecord(sequence_length=1000, features=features)
-        record_p = record.plot_with_bokeh(figure_width=5)
-        htm = file_html(record_p, CDN, "my plot")
-        # Generate the script and div for embedding: Does not work!
-        record_script, record_div = components(record_p)
+        #print(f"Email: {email}, Accession Number: {accession_number}, DNA Input: {dna_input}")
+
+        # # Example features for the DNA sequence visualization
+        # features = [
+        #     GraphicFeature(start=0, end=20, strand=+1, color="#ffd700", label="Small feature"),
+        #     GraphicFeature(start=20, end=500, strand=+1, color="#ffcccc", label="Gene 1"),
+        #     GraphicFeature(start=400, end=700, strand=-1, color="#cffccc", label="Gene 2"),
+        #     GraphicFeature(start=600, end=900, strand=+1, color="#ccccff", label="Gene 3")
+        # ]
+        # record = GraphicRecord(sequence_length=1000, features=features)
+        # record_p = record.plot_with_bokeh(figure_width=5)
+        # htm = file_html(record_p, CDN, "my plot")
+        # # Generate the script and div for embedding: Does not work!
+        # record_script, record_div = components(record_p)
     
     return render_template('index.html', record_script=record_script, record_div=record_div)
 
@@ -94,4 +100,4 @@ def is_valid_dna_sequence(dna_input):
     return True
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=True, threaded=False)
