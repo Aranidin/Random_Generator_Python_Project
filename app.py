@@ -2,40 +2,58 @@ from flask import Flask, render_template, request, flash
 from dna_features_viewer import GraphicFeature, GraphicRecord
 from bokeh.embed import components, file_html
 from bokeh.resources import CDN
+from Bio import SeqIO
+import os
 app = Flask(__name__)
-
-#secret key
-app.secret_key = "thinkofsomethingsecret"
+app.config["UPLOAD_FOLDER"] = "uploads" #folder for file uploads
+app.secret_key = "thinkofsomethingsecret" #secret key
 
 @app.route('/', methods=['GET', 'POST'])
 def home():
     record_script, record_div = None, None  # Initialize variables to prevent errors if no plot
 
     if request.method == 'POST':
-        #see if NCBI form was submitted
+        #NCBI form
         email = request.form.get("email")
-        accession_number = request.form.get("acess_n")
-        dna_input = request.form.get('textarea')  # Get input from the text area
-        print(dna_input)  # Print the input in the terminal for debugging
+        accession_number = request.form.get("access_n")
+        fasta_file = request.files.get("fasta_file")
+
+        #check for file upload
+        if fasta_file:
+            file_path = os.path.join(app.config["UPLOAD_FOLDER"], fasta_file.filename)
+            fasta_file.save(file_path)
+
+            #read sequence from fasta file
+            dna_input = read_fasta(file_path)
+            flash("Fasta file upload successful!", "validation")
+
+        #manual DNA sequence input
+        if not dna_input:
+            dna_input = request.form.get('textarea')  # Get input from the text area
+            print(dna_input)  # Print the input in the terminal for debugging
+
         # Validate inputs
-        
         if email:
             if not is_valid_email(email):
                 flash("Invalid email address, try again!", "error")
             else:
                 flash("Valid email address!", "validation")
-        
+
         if accession_number:
             if not is_valid_accession_number(accession_number):
                 flash("Invalid accession number, try again!", "error")
             else:
-                flash("Valid accession number", "validation")
+                flash("Valid accession number!", "validation")
         
         if dna_input:
             if not is_valid_dna_sequence(dna_input):
-                flash("Invalid DNA sequence, only A, T, C, G, U, and N are allowed", "error")
-            else: 
-                flash("DNA sequence is valid!", "validation")
+                flash("Invalid DNA sequence, only A, T, C, G, U, and N are allowed!", "error")
+            #max input of 1000 bases
+            if len(dna_input) > 1000:
+                flash("Only sequences with a max. length of 1000 allowed!")
+
+        return render_template('index.html')
+        print(f"Email: {email}, Accession Number: {accession_number}, DNA Input: {dna_input}")
 
         # Example features for the DNA sequence visualization
         features = [
@@ -51,18 +69,23 @@ def home():
         record_script, record_div = components(record_p)
     
     return render_template('index.html', record_script=record_script, record_div=record_div)
-#Validation functions for NCBI input
 
+#Function to read a fasta file and parse DNA sequence
+def read_fasta(file_path):
+    record = SeqIO.read(file_path, "fasta")
+    return str(record.seq)
+
+#Validation functions for NCBI input
 def is_valid_email(email):
     if "@" in email and "." in email and len(email) > 2:
         return True
     return False
-#something here doesn't work yet
+#acc number must be min 4 long and contain digits from the third position
 def is_valid_accession_number(accession_number):
-    if accession_number[3:].isdigit():
+    if len(accession_number) >= 4 and accession_number[2:].isdigit():
         return True
     return False
-    
+#only allow the base Nucleotides, need to look at fasta files for upper, lower case  
 def is_valid_dna_sequence(dna_input):
     valid_bases = ["A", "T", "C", "G", "N", "U"]
     for i in dna_input:
