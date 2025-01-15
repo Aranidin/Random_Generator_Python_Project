@@ -20,7 +20,18 @@
 </head>
 <body>
     <h1>Insert your DNA</h1>
-    
+    <!-- Display Flash Messages using jinja2 -->
+    {% with messages = get_flashed_messages() %} 
+        {% if messages %}
+            <div class="flash-messages">
+                <ul>
+                    {% for message in messages %}
+                        <li>{{ message }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        {% endif %}
+    {% endwith %}
     <input type="radio" id="NCBI" name="dna_import" onclick="toggleForms('NCBI_Form')" value="NCBI">
     <label for="NCBI">Import the sequence from NCBI</label><br>
     
