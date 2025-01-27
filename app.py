@@ -5,6 +5,19 @@ from bokeh.resources import CDN
 from Bio import SeqIO
 import os
 import matplotlib
+from dna_backend import (
+    read_dna_from_text_file,
+    gc_content,
+    find_orfs,
+    translate_dna_to_protein,
+    analyze_protein,
+    plot_gc_content,
+    plot_orf_lengths,
+    plot_amino_acid_composition,
+    process_dna_file
+)
+
+
 app = Flask(__name__)
 app.config["UPLOAD_FOLDER"] = "uploads" #folder for file uploads
 app.secret_key = "thinkofsomethingsecret" #secret key
@@ -15,27 +28,63 @@ def home():
     dna_input = None
 
     if request.method == 'POST':
+        print("Post request received") #Debugging
         #NCBI form
         email = request.form.get("email")
         accession_number = request.form.get("access_n")
         fasta_file = request.files.get("fasta_file")
+        print(f"Uploaded file: {fasta_file}")  # Debugging
 
-        #check for file upload PROBLEM!
-        if fasta_file:
-            print(f"File received: {fasta_file.filename}")  # Debugging log to check if file is received
-            file_path = os.path.join(app.config["UPLOAD_FOLDER"], fasta_file.filename)
-            fasta_file.save(file_path)
+        #check for file upload 
+        if fasta_file and fasta_file.filename !="":
+            #Debugging : Log file type and size
+            fasta_file.stream.seek(0) # Ensures pointer is at the beginning
+            file_size = len(fasta_file.read())
+            print(f"File type: {fasta_file.content_type}, File size: {file_size}") #Debigging: File type and length
 
-            #read sequence from fasta file
-            dna_input = read_fasta(file_path)
-            flash("Fasta file upload successful!", "validation")
-            print("Fasta file uploaded successfully")  # Debugging log to confirm flash and save
+            if file_size == 0:
+                print("Uploaded File is empty!")
+                flash("Uploaded file is empty!", "error")
+            else:
+               fasta_file.stream.seek(0) #reset position before saving
+               file_path = os.path.join(app.config["UPLOAD_FOLDER"], fasta_file.filename)
+               fasta_file.save(file_path)
+               print(f"File received: {fasta_file.filename}")  # Debugging log to check if file is received
+               
+               #validate file content (fallback)
+               try:  
+                #Using utility function from dna_backend
+                flash("FASTA file upload and parsing successful!", "validation") 
+                results = process_dna_file(file_path)
+                return(render_template("results.html", **results))
+               except Exception as e:
+                   print(f"Error reading FASTA file: {e}")
+                   flash("Invalif FASTA file content. Please check your file and try again!", "error")
+
 
         #manual DNA sequence input
         if not dna_input:
             dna_input = request.form.get('textarea')  # Get input from the text area
             print(dna_input)  # Print the input in the terminal for debugging
-
+        # Validate the DNA sequence input
+        if dna_input:
+            if not is_valid_dna_sequence(dna_input):
+                flash("Invalid DNA sequence, only A, T, C, G, U, and N are allowed!", "error")
+            elif len(dna_input) > 1000:
+                flash("Sequence length exceeds 1000 bases, please reduce it!", "error")
+            else:
+                # Process the DNA sequence (whether from file or manual input)
+                try:
+                    # Perform sequence analysis (e.g., GC content, ORF detection, etc.)
+                    results = {
+                        "gc_percentage": gc_content(dna_input),
+                        "orfs": find_orfs(dna_input),
+                        "protein_sequence": translate_dna_to_protein(dna_input),
+                        "protein_properties": analyze_protein(translate_dna_to_protein(dna_input))
+                    }
+                    return render_template("results.html", **results)
+                except Exception as e:
+                    flash(f"Error processing DNA sequence: {e}", "error")
         # Validate inputs
         if email:
             if not is_valid_email(email):
@@ -93,7 +142,8 @@ def is_valid_accession_number(accession_number):
     return False
 #only allow the base Nucleotides, need to look at fasta files for upper, lower case  
 def is_valid_dna_sequence(dna_input):
-    valid_bases = ["A", "T", "C", "G", "N", "U"]
+    valid_bases = ["A", "T", "C", "G", "N", "U", "a", "t", "c", "g", "n", "u"]
+    dna_input = dna_input.replace("\n", "").replace("\r", "").replace(" ", "")  # Remove unwanted characters
     for i in dna_input:
         if i not in valid_bases:
             return False

@@ -66,10 +66,10 @@
     <label for="Manual">Insert your DNA-Sequence</label><br>
     
     <div id="ManualForm" style="display: none;">
-        <form method="POST" action="/">
+        <form method="POST" action="/" enctype="multipart/form-data">
             <textarea name="textarea" rows="10" cols="50" placeholder="Enter your DNA sequence here..."></textarea><br>
             <label for="fasta_file">Or Upload a Fasta File:</label>
-            <input type="file" id="fasta_file" name="fasta_file" accept=".fasta,.fa"><br> <!-- take fasta as input file -->
+            <input type="file" id="fasta_file" name="fasta_file" accept=".fasta,.fa" > <!-- take fasta as input file -->
             <input type="submit" value="Submit">
         </form>
     </div>
