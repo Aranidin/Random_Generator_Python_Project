@@ -5,20 +5,46 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DNA Features Viewer</title>
     <style>
+        /* Styling for navigation */
+        nav {
+            background-color: #05745c;
+            padding: 10px;
+        }
+
+        nav ul {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        nav li {
+            display: inline-block;
+            margin-right: 10px;
+        }
+
+        nav a {
+            text-decoration: none;
+            color: white;
+            font-weight: bold;
+        }
+
+        nav a:hover {
+            color: #01240d;
+        }
+
+        /* Styling for validation and error messages */
         .validation {
-          color: green;
-          background-color: lightgreen;
-          padding: 10px;
-          margin: 10px 0;
+            color: green;
+            background-color: lightgreen;
+            padding: 10px;
+            margin: 10px 0;
         }
-      
+
         .error {
-          color: red;
-          background-color: lightcoral;
-          padding: 10px;
-          margin: 10px 0;
+            color: red;
+            background-color: lightcoral;
+            padding: 10px;
+            margin: 10px 0;
         }
-      
       </style>
       
     <script>
@@ -36,6 +62,12 @@
     </script>
 </head>
 <body>
+    <nav>
+        <ul>
+            <li><a href="/">Home</a></li>
+            <li><a href="/help">Help</a></li> <!-- Link to the Help page -->
+        </ul>
+    </nav>
     <h1>Insert your DNA</h1>
     <!-- Display Flash Messages using jinja2 -->
     {% with messages = get_flashed_messages(with_categories=true) %}
@@ -53,7 +85,7 @@
     <label for="NCBI">Import the sequence from NCBI</label><br>
     
     <div id="NCBI_Form" style="display: none;">
-        <form method="POST" action="/">
+        <form method="POST" action="/" enctype="multipart/form-data">
             <label for="email">Email:</label>
             <input type="text" id="email" name="email"><br>
             <label for="access_n">Accession Number:</label>

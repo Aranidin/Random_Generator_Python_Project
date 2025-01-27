@@ -3,7 +3,9 @@ from dna_features_viewer import GraphicFeature, GraphicRecord
 from bokeh.embed import components, file_html
 from bokeh.resources import CDN
 from Bio import SeqIO
+from io import StringIO
 import os
+import requests
 import matplotlib
 from dna_backend import (
     read_dna_from_text_file,
@@ -17,7 +19,6 @@ from dna_backend import (
     process_dna_file
 )
 
-
 app = Flask(__name__)
 app.config["UPLOAD_FOLDER"] = "uploads" #folder for file uploads
 app.secret_key = "thinkofsomethingsecret" #secret key
@@ -26,14 +27,39 @@ app.secret_key = "thinkofsomethingsecret" #secret key
 def home():
     record_script, record_div = None, None  # Initialize variables to prevent errors if no plot
     dna_input = None
+    results = {}  # Initialize results dictionary to store processing outputs
 
     if request.method == 'POST':
         print("Post request received") #Debugging
-        #NCBI form
+
+        #get form data 
         email = request.form.get("email")
         accession_number = request.form.get("access_n")
         fasta_file = request.files.get("fasta_file")
         print(f"Uploaded file: {fasta_file}")  # Debugging
+
+        if email and accession_number:
+            try:
+                #Fetch DNA sequence from NCBI
+                dna_input = fetch_sequence_from_ncbi(accession_number, email)
+                print(f"Fetched sequence: {dna_input[:50]}...") #Displays part of the sequence
+
+                #Validate DNA sequnce
+                if not is_valid_dna_sequence(dna_input):
+                    flash("Invalid DNA sequence, only A, T, C, G, U, and N are allowed!", "error")
+                elif len(dna_input) > 1000:
+                    flash("Sequence length exceeds 1000 bases, please reduce it!", "error")
+                else:
+                    #perform sequence analysis
+                    results = {
+                        "gc_percentage": gc_content(dna_input),
+                        "orfs": find_orfs(dna_input),
+                        "protein_sequence": translate_dna_to_protein(dna_input),
+                        "protein_properties": analyze_protein(translate_dna_to_protein(dna_input))
+                    }
+                    return render_template("results.html", **results)
+            except Exception as e:
+                flash(f"Error fetching NCBI sequence: {e}", "error")                      
 
         #check for file upload 
         if fasta_file and fasta_file.filename !="":
@@ -124,7 +150,8 @@ def home():
         # record_script, record_div = components(record_p)
     
     return render_template('index.html', record_script=record_script, record_div=record_div)
-
+def help_page():
+    return render_template("help.html")
 #Function to read a fasta file and parse DNA sequence
 def read_fasta(file_path):
     record = SeqIO.read(file_path, "fasta")
@@ -137,7 +164,7 @@ def is_valid_email(email):
     return False
 #acc number must be min 4 long and contain digits from the third position
 def is_valid_accession_number(accession_number):
-    if len(accession_number) >= 4 and accession_number[2:].isdigit():
+    if len(accession_number) >= 4:
         return True
     return False
 #only allow the base Nucleotides, need to look at fasta files for upper, lower case  
@@ -148,6 +175,48 @@ def is_valid_dna_sequence(dna_input):
         if i not in valid_bases:
             return False
     return True
+
+def fetch_sequence_from_ncbi(accession_number, email):
+    #NCBI Entrez E-utilities URL
+    url = f"https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi"
+
+    params = {
+        "db": "nucleotide",  #search in NCBI nucleotide database
+        "term": accession_number,  # Accessionnumber to search for
+        "retmode" : "xml",  #XML format
+        "email" : email  #email for Entrez usage tracking from NCBI
+    }
+    response = requests.get(url, params=params)
+    if response.status_code == 200:
+        #Parse XML response to get the ID
+        from xml.etree import ElementTree as ET
+        tree = ET.ElementTree(ET.fromstring(response.text))
+        root = tree.getroot()
+        id_list = root.find(".//IdList")
+
+        if id_list is not None:
+            #get the first ID from the list
+            sequence_id = id_list.find("Id").text
+            #get sequence using ID
+            fetch_url = f"https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi"
+            fetch_params = {
+                "db": "nucleotide",
+                "id": sequence_id,
+                "rettype": "fasta",
+                "retmode": "text",
+                "email": email
+            }
+            fetch_response = requests.get(fetch_url, params = fetch_params)
+            if fetch_response.status_code == 200:
+                record = SeqIO.read(StringIO(fetch_response.text), "fasta")
+                return str(record.seq) #return sequence as string
+            else:
+                raise Exception("Failed to detch sequence data!")
+        else:
+            raise Exception("Accession number not found!")
+    else:
+        raise Exception("Failed to search for accession number!")
+    
 
 if __name__ == '__main__':
     app.run(debug=True, threaded=False)
