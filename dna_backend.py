@@ -5,23 +5,43 @@ import matplotlib.pyplot as plt
 
 # 1) Reading the DNA Sequence
 def read_dna_from_text_file(file_path):
-
     print("Reading file: " + file_path)
-    # Checks if the file exists at the specified path using the os.path.exists() function
+
+    # Check if the file exists. If not, raise a FileNotFoundError.
     if not os.path.exists(file_path):
-        raise FileNotFoundError("Reading file: " + file_path + "does not exist. Please check the file path.")
+        raise FileNotFoundError(f"File {file_path} does not exist. Please check the file path.")
 
-    # Opens the file at the specified file_path in read mode ('r')
-    with open(file_path, 'r') as file:
-        # Reads the file content, removes extra spaces, converts the sequence to uppercase
-        sequence = file.read().strip().upper()
+    # Open the file in read mode ('r') and read all lines.
+    with open(file_path, "r") as file:
+        lines = file.readlines()
 
-    valid_bases = {"A", "T", "C", "G"}
-    # Converts the sequence into a set of unique characters, Checks if all characters in the sequence belong to the set of valid bases
-    if not set(sequence).issubset(valid_bases):
-        raise ValueError("Invalid DNA sequence: contains characters other than A, T, C, G.")
+        # Check if the file starts with '>', indicating it's in FASTA format.
+        if lines[0].startswith(">"):
+            print("Detected FASTA format. Ignoring header...")
+            # Extract all lines that do not start with '>'.
+            sequence_lines = [line.strip() for line in lines if not line.startswith(">")]
+        else:
+            print("Detected TXT format. Processing entire file...")
 
-    return sequence
+            # For TXT format, assume all lines contain the sequence.
+            sequence_lines = [line.strip() for line in lines]
+
+        # Join all lines into a single uppercase DNA sequence.
+        sequence = "".join(sequence_lines).upper()
+        print("Extracted Sequence:", sequence)  # Debugging
+
+        # Validate the sequence by checking for invalid characters.
+        valid_bases = {"A", "T", "C", "G"}
+        invalid_chars = set(sequence) - valid_bases
+        if invalid_chars:
+            print(f"Warning: Invalid characters found in sequence: {invalid_chars}")
+
+            # Remove any invalid characters from the sequence.
+            sequence = ''.join(filter(lambda x: x in valid_bases, sequence))
+            print("Cleaned sequence by removing invalid characters.")
+
+        # Return the cleaned DNA sequence.
+        return sequence
 
 
 # 2) Calculating GC Content
@@ -115,13 +135,80 @@ def plot_amino_acid_composition(protein_sequence):
     plt.title("Amino Acid Composition")
     plt.show()
 
-## Processing of DNA file
+##Processing dna file
 def process_dna_file(file_path):
+    print("Processing DNA file:", file_path)  # Debugging
+
     dna_sequence = read_dna_from_text_file(file_path)
-    gc_percentage = gc_content(dna_sequence)
-    orfs = find_orfs(dna_sequence)
-    protein_sequence = translate_dna_to_protein(dna_sequence)
-    protein_properties = analyze_protein(protein_sequence)
+    print("Extracted DNA Sequence:", dna_sequence)  # Debugging
+
+    try:
+        gc_percentage = gc_content(dna_sequence)
+        print("GC Content:", gc_percentage)
+    except Exception as e:
+        print("Error in gc_content:", e)
+        return {"error": f"gc_content error: {e}"}
+
+    try:
+        orfs = find_orfs(dna_sequence)
+        print("ORFs Found:", orfs)
+    except Exception as e:
+        print("Error in find_orfs:", e)
+        return {"error": f"find_orfs error: {e}"}
+
+    try:
+        protein_sequence = translate_dna_to_protein(dna_sequence)
+        print("Protein Sequence:", protein_sequence)
+    except Exception as e:
+        print("Error in translate_dna_to_protein:", e)
+        return {"error": f"translate_dna_to_protein error: {e}"}
+
+    try:
+        protein_properties = analyze_protein(protein_sequence)
+        print("Protein Properties:", protein_properties)
+    except Exception as e:
+        print("Error in analyze_protein:", e)
+        return {"error": f"analyze_protein error: {e}"}
+
+    # Return all results as a dictionary
+    return {
+        "dna_sequence": dna_sequence,
+        "gc_percentage": gc_percentage,
+        "orfs": orfs,
+        "protein_sequence": protein_sequence,
+        "protein_analysis": protein_properties
+    }
+
+##Processing sequence
+def processing_sequence(dna_sequence):
+
+    try:
+        gc_percentage = gc_content(dna_sequence)
+        print("GC Content:", gc_percentage)
+    except Exception as e:
+        print("Error in gc_content:", e)
+        return {"error": f"gc_content error: {e}"}
+
+    try:
+        orfs = find_orfs(dna_sequence)
+        print("ORFs Found:", orfs)
+    except Exception as e:
+        print("Error in find_orfs:", e)
+        return {"error": f"find_orfs error: {e}"}
+
+    try:
+        protein_sequence = translate_dna_to_protein(dna_sequence)
+        print("Protein Sequence:", protein_sequence)
+    except Exception as e:
+        print("Error in translate_dna_to_protein:", e)
+        return {"error": f"translate_dna_to_protein error: {e}"}
+
+    try:
+        protein_properties = analyze_protein(protein_sequence)
+        print("Protein Properties:", protein_properties)
+    except Exception as e:
+        print("Error in analyze_protein:", e)
+        return {"error": f"analyze_protein error: {e}"}
 
     # Return all results as a dictionary
     return {

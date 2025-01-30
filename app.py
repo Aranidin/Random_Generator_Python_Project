@@ -16,7 +16,8 @@ from dna_backend import (
     plot_gc_content,
     plot_orf_lengths,
     plot_amino_acid_composition,
-    process_dna_file
+    process_dna_file,
+    processing_sequence
 )
 
 app = Flask(__name__)
@@ -51,12 +52,7 @@ def home():
                     flash("Sequence length exceeds 1000 bases, please reduce it!", "error")
                 else:
                     #perform sequence analysis
-                    results = {
-                        "gc_percentage": gc_content(dna_input),
-                        "orfs": find_orfs(dna_input),
-                        "protein_sequence": translate_dna_to_protein(dna_input),
-                        "protein_properties": analyze_protein(translate_dna_to_protein(dna_input))
-                    }
+                    results = processing_sequence(dna_input)
                     return render_template("results.html", **results)
             except Exception as e:
                 flash(f"Error fetching NCBI sequence: {e}", "error")                      
@@ -84,8 +80,8 @@ def home():
                 results = process_dna_file(file_path)
                 return(render_template("results.html", **results))
                except Exception as e:
-                   print(f"Error reading FASTA file: {e}")
-                   flash("Invalif FASTA file content. Please check your file and try again!", "error")
+                   flash(f"Error reading FASTA file: {e}", "error")
+                   #flash("Invalid FASTA file content. Please check your file and try again!", "error")
 
 
         #manual DNA sequence input
@@ -102,12 +98,7 @@ def home():
                 # Process the DNA sequence (whether from file or manual input)
                 try:
                     # Perform sequence analysis (e.g., GC content, ORF detection, etc.)
-                    results = {
-                        "gc_percentage": gc_content(dna_input),
-                        "orfs": find_orfs(dna_input),
-                        "protein_sequence": translate_dna_to_protein(dna_input),
-                        "protein_properties": analyze_protein(translate_dna_to_protein(dna_input))
-                    }
+                    results = processing_sequence(dna_input)
                     return render_template("results.html", **results)
                 except Exception as e:
                     flash(f"Error processing DNA sequence: {e}", "error")

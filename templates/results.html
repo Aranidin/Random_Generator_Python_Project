@@ -31,7 +31,7 @@
     <h3>Protein Analysis:</h3>
     <ul>
         <li>Isoelectric Point (pI): {{ protein_analysis.pI }}</li>
-        <li>Molecular Weight: {{ protein_analysis.Molecular Weight }} Da</li>
+        <li>Molecular Weight: {{ protein_analysis['Molecular Weight'] }} Da</li>
         <li>Amino Acid Percentages:</li>
         <ul>
             {% for aa, percentage in protein_analysis['Amino Acid Percentages'].items() %}
