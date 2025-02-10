@@ -123,26 +123,24 @@ def home():
                 flash("Only sequences with a max. length of 1000 allowed!")
             else:
                 flash("Success!", "validation")
-
-
-        #print(f"Email: {email}, Accession Number: {accession_number}, DNA Input: {dna_input}")
-
-        # # Example features for the DNA sequence visualization
-        # features = [
-        #     GraphicFeature(start=0, end=20, strand=+1, color="#ffd700", label="Small feature"),
-        #     GraphicFeature(start=20, end=500, strand=+1, color="#ffcccc", label="Gene 1"),
-        #     GraphicFeature(start=400, end=700, strand=-1, color="#cffccc", label="Gene 2"),
-        #     GraphicFeature(start=600, end=900, strand=+1, color="#ccccff", label="Gene 3")
-        # ]
-        # record = GraphicRecord(sequence_length=1000, features=features)
-        # record_p = record.plot_with_bokeh(figure_width=5)
-        # htm = file_html(record_p, CDN, "my plot")
-        # # Generate the script and div for embedding: Does not work!
-        # record_script, record_div = components(record_p)
     
     return render_template('index.html', record_script=record_script, record_div=record_div)
+@app.route('/help')
 def help_page():
     return render_template("help.html")
+@app.route('/help/biology-basics')
+def help_biology_basics():
+    return "<h1>Biology Basics</h1><p>Learn fundamental biological concepts relevant to our platform.</p>"
+
+@app.route('/help/examples')
+def help_examples():
+    return "<h1>Examples</h1><p>See practical examples of DNA sequence analysis.</p>"
+
+@app.route('/help/functions')
+def help_functions():
+    return "<h1>Functions</h1><p>Understand the different features and tools available.</p>"
+
+
 #Function to read a fasta file and parse DNA sequence
 def read_fasta(file_path):
     record = SeqIO.read(file_path, "fasta")

@@ -3,54 +3,52 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Help - DNA Visualization and Analysis</title>
-    <!-- Add your CSS link here if needed -->
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <title>Help & Support</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; }
+        .container { max-width: 800px; margin: auto; padding: 20px; }
+        .panel { 
+            background: #f0f0f0; 
+            padding: 20px; 
+            margin: 10px; 
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .panel:hover { background: #ddd; }
+        .contact-box { 
+            margin-top: 20px; 
+            padding: 15px; 
+            background: #e0e0e0; 
+            border-radius: 5px;
+        }
+    </style>
 </head>
 <body>
-    <header>
-        <h1>Help - DNA Visualization and Analysis Tool</h1>
-        <nav>
-            <ul>
-                <li><a href="/">Home</a></li>
-                <li><a href="/help">Help</a></li>
-            </ul>
-        </nav>
-    </header>
-    
-    <main>
-        <h2>Project Overview</h2>
-        <p></p>
 
-        <h2>Features</h2>
-        <ul>
-            <li></li>
-            <li></li>
-            <li></li>
-            <!-- Add more feature descriptions as needed -->
-        </ul>
+    <h1>Help & Support</h1>
 
-        <h2>How to Use</h2>
-        <p></p>
-        <ul>
-            <li></li>
-            <li></li>
-            <!-- Add more usage instructions as needed -->
-        </ul>
+    <div class="container">
+        <div class="panel" onclick="location.href='/help/biology-basics'">
+            <h2>Biology Basics</h2>
+            <p>Learn fundamental biological concepts relevant to our platform.</p>
+        </div>
 
-        <h2>Troubleshooting</h2>
-        <ul>
-            <li></li>
-            <li></li>
-            <!-- Add troubleshooting tips here -->
-        </ul>
-        
-        <h2>Contact</h2>
-        <p></p>
-    </main>
-    
-    <footer>
-        <p>&copy; 2025 DNA Visualization and Analysis Tool</p>
-    </footer>
+        <div class="panel" onclick="location.href='/help/examples'">
+            <h2>Examples</h2>
+            <p>See example of DNA sequence analysis.</p>
+        </div>
+
+        <div class="panel" onclick="location.href='/help/functions'">
+            <h2>Functions</h2>
+            <p>Understand the different features and tools available.</p>
+        </div>
+
+        <div class="contact-box">
+            <h3>Contact Us</h3>
+            <p>Email: <a href="mailto:maja.lobermeier@stud.uni-goettingen.de">maja.lobermeier@stud.uni-goettingen.de</a></p>
+            <p>GitHub: <a href="https://github.com/Aranidin/Random_Generator_Python_Project" target="_blank">GitHub Repository</a></p>
+        </div>
+    </div>
+
 </body>
 </html>
