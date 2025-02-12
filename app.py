@@ -129,12 +129,12 @@ def home():
 def help_page():
     return render_template("help.html")
 @app.route('/help/biology-basics')
-def help_biology_basics():
-    return "<h1>Biology Basics</h1><p>Learn fundamental biological concepts relevant to our platform.</p>"
+def biology_basics():
+    return render_template("biology_basics.html")
 
-@app.route('/help/examples')
+@app.route('/help/example')
 def help_examples():
-    return "<h1>Examples</h1><p>See practical examples of DNA sequence analysis.</p>"
+    return render_template("help_example.html")
 
 @app.route('/help/functions')
 def help_functions():

@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Biology Basics</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            text-align: center; 
+            margin: 0;
+            padding: 0;
+        }
+        .container { 
+            max-width: 900px; 
+            margin: auto; 
+            padding: 20px; 
+            display: flex; /* Enables flexbox */
+            align-items: center; /* Aligns content vertically */
+            justify-content: space-between; /* Ensures space between text and image */
+            text-align: left; 
+        }
+        .text-content {
+            flex: 1; /* Takes up available space */
+            padding-right: 20px; /* Adds space between text and image */
+        }
+        .image-container img {
+            max-width: 300px; /* Ensures the image isn't too large */
+            width: 100%;
+            border-radius: 5px;
+        }
+        .back-link { 
+            margin-top: 20px; 
+            display: block;
+            text-decoration: none;
+            color: blue;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Biology Basics</h1>
+
+    <div class="container">
+        <!-- Left: Text Content -->
+        <div class="text-content">
+            <p>Let's start at the beginning! You're probably using this website because you have a DNA sequence and want to learn more about it.</p>
+            <p>Here are some fundamental concepts to keep in mind when working with DNA sequences: Every living organism is built from the same basic DNA components. DNA consists of four bases—cytosine (C), guanine (G), adenine (A), and thymine (T)—as well as a sugar called deoxyribose, which gives DNA its full name: <em>deoxyribonucleic acid (DNA)</em>. These four bases encode all life on Earth.</p>
+            <p>Now that we have a DNA sequence, we can start uncovering its secrets. Decoding DNA is a straightforward process. First, the sequence is transcribed into RNA. Within each cell, specialized proteins called ribosomes translate the RNA into amino acids, the building blocks of proteins. There are 20 standard amino acids, and they are encoded using triplets of DNA bases.</p>
+            <p>But how does the ribosome know where a gene starts and ends? Every translation begins with a specific <strong>start codon</strong>—AUG—which codes for the amino acid methionine. From there, the ribosome moves along the RNA, reading the genetic code in triplets and assembling a chain of amino acids to form a protein.</p>
+
+            <a href="/help" class="back-link">← Back to Help Page</a>
+        </div>
+
+        <!-- Right: Image -->
+        <div class="image-container">
+            <img src="{{ url_for('static', filename='images/dna_structure.png') }}" alt="DNA Structure">
+        </div>
+    </div>
+
+</body>
+</html>
+
