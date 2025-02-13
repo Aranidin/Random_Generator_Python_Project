@@ -3,6 +3,9 @@ from Bio.Seq import Seq
 from Bio.SeqUtils.ProtParam import ProteinAnalysis
 import matplotlib.pyplot as plt
 
+import plotly.graph_objects as go
+from plotly.subplots import make_subplots
+import json
 # 1) Reading the DNA Sequence
 def read_dna_from_text_file(file_path):
     print("Reading file: " + file_path)
@@ -93,7 +96,138 @@ def analyze_protein(protein_sequence):
 
 
 # 6) Visualizations
-
+# Linear DNA with annotations (Dinara)
+# Function for interactive linear DNA visualization
+def create_dna_figure(sequence, window_start=0, window_size=150, features_dict=None):
+    # Calculate window end 
+    window_end = min(window_start + window_size, len(sequence))
+    visible_sequence = sequence[window_start:window_end]
+    
+    # Calculate positions for sequence display
+    x_positions = list(range(window_start + 1, window_end + 1))
+    y_positions = [0] * len(visible_sequence)
+    
+    fig = make_subplots(rows=1, cols=1, shared_xaxes=True)
+    
+    # DNA sequence bases
+    for i, base in enumerate(visible_sequence):
+        color = {
+            'A': '#2CD05E',  # Green
+            'T': '#CC2C2C',  # Red
+            'G': '#FFAA00',  # Orange
+            'C': '#0066FF'   # Blue
+        }.get(base.upper(), '#808080')
+        
+        fig.add_trace(
+            go.Scatter(
+                x=[x_positions[i]],
+                y=[y_positions[i]],
+                text=[base],
+                mode="text",
+                textfont=dict(
+                    size=14,
+                    family="Courier New",
+                    color=color
+                ),
+                hoverinfo='text',
+                hovertext=f'Position: {window_start + i + 1}<br>Base: {base}',
+                showlegend=False
+            )
+        )
+    
+    # Add feature annotations
+    if features_dict and isinstance(features_dict, dict):
+        colors = ['#FF9999', '#99FF99', '#9999FF', '#FFFF99', '#FF99FF', '#99FFFF']
+        
+        for idx, (name, feat_seq) in enumerate(features_dict.items()):
+            if not isinstance(feat_seq, str):
+                continue
+                
+            # Find all occurrences of the feature sequence
+            current_pos = 0
+            while True:
+                # Find the next occurrence of the feature sequence
+                start = sequence.find(feat_seq, current_pos)
+                if start == -1:  # No more occurrences found
+                    break
+                    
+                end = start + len(feat_seq)
+                current_pos = start + 1  # Move to next position for next search
+                
+                # Only show features that are visible in current window
+                if not (end < window_start or start > window_end):
+                    color = colors[idx % len(colors)]
+                    
+                    # Adjust feature boundaries to window
+                    visible_start = max(start, window_start)
+                    visible_end = min(end, window_end)
+                    
+                    # Add feature box
+                    fig.add_trace(
+                        go.Scatter(
+                            x=[visible_start + 1, visible_start + 1, visible_end + 1, visible_end + 1, visible_start + 1],
+                            y=[0.3, 0.7, 0.7, 0.3, 0.3],
+                            fill="toself",
+                            fillcolor=color,
+                            line=dict(color=color),
+                            name=f"{name} ({start + 1}-{end})",
+                            hoverinfo='text',
+                            hovertext=f'Feature: {name}<br>Start: {start + 1}<br>End: {end}<br>Length: {len(feat_seq)} bp<br>Sequence: {feat_seq}'
+                        )
+                    )
+                    
+                    # Add feature label if there's enough space
+                    if visible_end - visible_start > len(name):
+                        fig.add_trace(
+                            go.Scatter(
+                                x=[(visible_start + visible_end)/2 + 1],
+                                y=[0.5],
+                                mode='text',
+                                text=[name],
+                                textposition='middle center',
+                                textfont=dict(
+                                    size=10,
+                                    color='black'
+                                ),
+                                showlegend=False,
+                                hoverinfo='skip'
+                            )
+                        )
+    
+    # Update layout
+    fig.update_layout(
+        plot_bgcolor='white',
+        paper_bgcolor='white',
+        height=200,
+        margin=dict(l=50, r=50, t=50, b=50),
+        xaxis=dict(
+            showgrid=False,
+            zeroline=False,
+            title='Base Position',
+            range=[window_start + 1, window_end + 1]
+        ),
+        yaxis=dict(
+            showgrid=False,
+            zeroline=False,
+            showticklabels=False,
+            range=[-0.2, 1.0]
+        ),
+        showlegend=True,
+        legend=dict(
+            orientation="h",
+            yanchor="bottom",
+            y=1.02,
+            xanchor="right",
+            x=1
+        ),
+        title=dict(
+            text=f'DNA Sequence Viewer (Position {window_start + 1} to {window_end})',
+            x=0.5,
+            xanchor='center'
+        )
+    )
+    
+    return fig
 ## GC Content (Bar chart)
 def plot_gc_content(gc_percentage):
     """
@@ -202,21 +336,30 @@ def processing_sequence(dna_sequence):
     except Exception as e:
         print("Error in translate_dna_to_protein:", e)
         return {"error": f"translate_dna_to_protein error: {e}"}
-
+    
     try:
         protein_properties = analyze_protein(protein_sequence)
         print("Protein Properties:", protein_properties)
     except Exception as e:
         print("Error in analyze_protein:", e)
         return {"error": f"analyze_protein error: {e}"}
-
+    # Preprocessing for visualization and annotation (Dinara)
+    try:
+        # Create DNA visualization
+        dna_fig = create_dna_figure(dna_sequence)
+        # Convert plot to JSON for embedding
+        dna_visualization = dna_fig.to_json()
+    except Exception as e:
+        print("Error in dna_visualization:", e)
+        return {"error": f"dna_visualization error: {e}"}
     # Return all results as a dictionary
     return {
         "dna_sequence": dna_sequence,
         "gc_percentage": gc_percentage,
         "orfs": orfs,
         "protein_sequence": protein_sequence,
-        "protein_analysis": protein_properties
+        "protein_analysis": protein_properties,
+        "dna_plot": dna_visualization # Added fo visualization
     }
 
 
