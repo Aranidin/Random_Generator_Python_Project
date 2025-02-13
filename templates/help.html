@@ -5,29 +5,72 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Help & Support</title>
     <style>
-        body { font-family: Arial, sans-serif; text-align: center; }
-        .container { max-width: 800px; margin: auto; padding: 20px; }
+        body { 
+            font-family: Arial, sans-serif; 
+            text-align: center; 
+            background-color: #f8f9fa;
+            margin: 0;
+            padding: 0;
+        }
+        .container { 
+            max-width: 800px; 
+            margin: 30px auto; 
+            padding: 20px; 
+            background: white; 
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            color: #2F4F2F;
+            margin-bottom: 20px;
+        }
         .panel { 
             background: #f0f0f0; 
             padding: 20px; 
-            margin: 10px; 
+            margin: 10px 0; 
             border-radius: 5px;
             cursor: pointer;
+            transition: background 0.3s ease-in-out;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
         }
-        .panel:hover { background: #ddd; }
+        .panel:hover { background: #e0e0e0; }
         .contact-box { 
-            margin-top: 20px; 
+            margin-top: 30px; 
             padding: 15px; 
             background: #e0e0e0; 
             border-radius: 5px;
+            font-size: 14px;
+        }
+        .contact-box a {
+            color: #2F4F2F;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        .contact-box a:hover {
+            text-decoration: underline;
+        }
+        .back-link {
+            display: inline-block;
+            margin-top: 25px;
+            padding: 12px 20px;
+            background: #2F4F2F;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+            transition: background 0.3s;
+            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
+        }
+        .back-link:hover {
+            background: #3a633a;
         }
     </style>
 </head>
 <body>
 
-    <h1>Help & Support</h1>
-
     <div class="container">
+        <h1>Help & Support</h1>
+
         <div class="panel" onclick="location.href='/help/biology-basics'">
             <h2>Biology Basics</h2>
             <p>Learn fundamental biological concepts relevant to our platform.</p>
@@ -35,7 +78,7 @@
 
         <div class="panel" onclick="location.href='/help/example'">
             <h2>Example</h2>
-            <p>See example of DNA sequence analysis.</p>
+            <p>See an example of DNA sequence analysis.</p>
         </div>
 
         <div class="panel" onclick="location.href='/help/functions'">
@@ -48,6 +91,9 @@
             <p>Email: <a href="mailto:maja.lobermeier@stud.uni-goettingen.de">maja.lobermeier@stud.uni-goettingen.de</a></p>
             <p>GitHub: <a href="https://github.com/Aranidin/Random_Generator_Python_Project" target="_blank">GitHub Repository</a></p>
         </div>
+
+        <!-- Back to Main Page Button -->
+        <a href="/" class="back-link">Back to Main Page</a>
     </div>
 
 </body>

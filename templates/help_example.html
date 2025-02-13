@@ -3,17 +3,86 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Help - Examples</title>
+    <title>Help - Example</title>
     <style>
-        body { font-family: Arial, sans-serif; max-width: 800px; margin: auto; padding: 20px; }
-        h1, h2 { text-align: center; }
-        .container { background: #f9f9f9; padding: 20px; border-radius: 5px; }
-        pre { background: #eee; padding: 10px; border-radius: 5px; }
+        body { 
+            font-family: 'Arial', sans-serif; 
+            background-color: #f8f8f8;
+            margin: 0;
+            padding: 0;
+            color: #333;
+        }
+
+        h1 {
+            font-size: 36px;
+            color: #05745c;
+            text-align: center;
+            padding: 40px 0;
+            margin: 0;
+        }
+
+        .container { 
+            max-width: 900px; 
+            margin: 30px auto;
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            line-height: 1.6;
+        }
+
+        h2 {
+            color: #05745c;
+            font-size: 28px;
+            margin-top: 30px;
+        }
+
+        p {
+            font-size: 18px;
+            margin-bottom: 20px;
+        }
+
+        ul {
+            font-size: 18px;
+            list-style-type: disc;
+            margin-left: 20px;
+        }
+
+        ul li {
+            margin-bottom: 10px;
+        }
+
+        pre {
+            background: #f1f1f1;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 16px;
+            color: #333;
+            overflow-x: auto;
+        }
+
+        a {
+            color: #05745c;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        /* Back to top link */
+        .back-link {
+            margin-top: 30px;
+            display: inline-block;
+            font-size: 16px;
+        }
     </style>
 </head>
 <body>
 
-    <h1>Help - Examples</h1>
+    <h1>Help - Example</h1>
 
     <div class="container">
         <h2>What Can This Website Do for You?</h2>
@@ -50,7 +119,7 @@
 
         <p>All you have to do is enter a DNA sequence in the text input field or upload a FASTA file—<strong>and let the analysis begin!</strong> </p>
 
-        <p><a href="/help">Back to Help Page</a></p>
+        <p class="back-link"><a href="/help">Back to Help Page</a></p>
     </div>
 
 </body>

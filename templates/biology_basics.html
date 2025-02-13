@@ -5,35 +5,86 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Biology Basics</title>
     <style>
+        /* Base styles */
         body { 
-            font-family: Arial, sans-serif; 
-            text-align: center; 
+            font-family: 'Arial', sans-serif; 
             margin: 0;
             padding: 0;
+            background-color: #f8f8f8;
+            color: #333;
         }
+
+        h1 {
+            font-size: 36px;
+            color: #05745c;
+            text-align: center;
+            padding: 40px 0;
+            margin: 0;
+        }
+
         .container { 
-            max-width: 900px; 
-            margin: auto; 
-            padding: 20px; 
-            display: flex; /* Enables flexbox */
-            align-items: center; /* Aligns content vertically */
-            justify-content: space-between; /* Ensures space between text and image */
-            text-align: left; 
+            max-width: 1000px; 
+            margin: 30px auto;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            background-color: white;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
         }
+
+        /* Left: Text content styling */
         .text-content {
-            flex: 1; /* Takes up available space */
-            padding-right: 20px; /* Adds space between text and image */
+            flex: 1;
+            padding-right: 30px;
+            font-size: 18px;
+            line-height: 1.6;
         }
+
+        .text-content p {
+            margin-bottom: 15px;
+        }
+
+        .text-content strong {
+            color: #05745c;
+        }
+
+        .text-content em {
+            font-style: italic;
+        }
+
+        /* Right: Image container styling */
         .image-container img {
-            max-width: 300px; /* Ensures the image isn't too large */
             width: 100%;
-            border-radius: 5px;
+            max-width: 350px;
+            border-radius: 8px;
         }
+
+        /* Back link styling */
         .back-link { 
             margin-top: 20px; 
-            display: block;
             text-decoration: none;
-            color: blue;
+            color: #05745c;
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        .back-link:hover {
+            text-decoration: underline;
+        }
+
+        /* Responsiveness */
+        @media screen and (max-width: 768px) {
+            .container {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .image-container img {
+                max-width: 250px;
+            }
         }
     </style>
 </head>
@@ -49,7 +100,7 @@
             <p>Now that we have a DNA sequence, we can start uncovering its secrets. Decoding DNA is a straightforward process. First, the sequence is transcribed into RNA. Within each cell, specialized proteins called ribosomes translate the RNA into amino acids, the building blocks of proteins. There are 20 standard amino acids, and they are encoded using triplets of DNA bases.</p>
             <p>But how does the ribosome know where a gene starts and ends? Every translation begins with a specific <strong>start codon</strong>—AUG—which codes for the amino acid methionine. From there, the ribosome moves along the RNA, reading the genetic code in triplets and assembling a chain of amino acids to form a protein.</p>
 
-            <a href="/help" class="back-link">← Back to Help Page</a>
+            <p class="back-link"><a href="/help">Back to Help Page</a></p>
         </div>
 
         <!-- Right: Image -->
