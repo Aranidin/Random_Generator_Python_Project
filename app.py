@@ -1,12 +1,16 @@
-from flask import Flask, render_template, request, flash
-from dna_features_viewer import GraphicFeature, GraphicRecord
-from bokeh.embed import components, file_html
-from bokeh.resources import CDN
+from flask import Flask, render_template, request, flash, jsonify, send_from_directory
+from dna_features_viewer import GraphicFeature, CircularGraphicRecord, GraphicRecord
+import base64
+from io import BytesIO
 from Bio import SeqIO
 from io import StringIO
 import os
 import requests
 import matplotlib
+import matplotlib.pyplot as plt
+import plotly.graph_objects as go
+from plotly.subplots import make_subplots
+import json
 from dna_backend import (
     read_dna_from_text_file,
     gc_content,
@@ -17,19 +21,26 @@ from dna_backend import (
     plot_orf_lengths,
     plot_amino_acid_composition,
     process_dna_file,
-    processing_sequence
+    processing_sequence,
+    create_dna_figure,
 )
+matplotlib.use('Agg') # for import of matplotlib non-interactive plots
 
 app = Flask(__name__)
 app.config["UPLOAD_FOLDER"] = "uploads" #folder for file uploads
 app.secret_key = "thinkofsomethingsecret" #secret key
-
+app.config["UPLOAD_FOLDER"] = "static/images"
+os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)  # Ensure folder exists
+# load annotations of DNA sequences
+with open('snap_gene_features.txt') as json_file:
+    snap_gene_feat = json.load(json_file)
+#dna_input = None
 @app.route('/', methods=['GET', 'POST'])
 def home():
-    record_script, record_div = None, None  # Initialize variables to prevent errors if no plot
+    record_script, record_div = None, None  #  prevent errors if no plot
     dna_input = None
     results = {}  # Initialize results dictionary to store processing outputs
-
+    
     if request.method == 'POST':
         print("Post request received") #Debugging
 
@@ -77,6 +88,7 @@ def home():
                try:  
                 #Using utility function from dna_backend
                 flash("FASTA file upload and parsing successful!", "validation") 
+                dna_input = read_fasta(file_path)
                 results = process_dna_file(file_path)
                 return(render_template("results.html", **results))
                except Exception as e:
@@ -90,6 +102,18 @@ def home():
             print(dna_input)  # Print the input in the terminal for debugging
         # Validate the DNA sequence input
         if dna_input:
+            features = []
+            for name, seq in snap_gene_feat.items():
+                start = dna_input.find(seq)
+                if start != -1:
+                    end = start + len(seq)
+                    features.append(GraphicFeature(
+                    start=start,
+                    end=end,
+                    strand=+1,  # +1 for forward strand
+                    color="#ffd700",
+                    label=name
+                    ))
             if not is_valid_dna_sequence(dna_input):
                 flash("Invalid DNA sequence, only A, T, C, G, U, and N are allowed!", "error")
             elif len(dna_input) > 1000:
@@ -98,7 +122,11 @@ def home():
                 # Process the DNA sequence (whether from file or manual input)
                 try:
                     # Perform sequence analysis (e.g., GC content, ORF detection, etc.)
-                    results = processing_sequence(dna_input)
+                    #results = processing_sequence(dna_input)
+                    results = processing_sequence(dna_input, features_dict=snap_gene_feat)
+
+                    results['dna_sequence'] = dna_input
+                    #mage_path = generate_and_save_circular_plot(dna_input)
                     return render_template("results.html", **results)
                 except Exception as e:
                     flash(f"Error processing DNA sequence: {e}", "error")
@@ -123,8 +151,94 @@ def home():
                 flash("Only sequences with a max. length of 1000 allowed!")
             else:
                 flash("Success!", "validation")
+                try:
+                    
+
+                    results = processing_sequence(dna_input)
+                    # Create DNA visualization
+                    dna_fig = create_dna_figure(dna_input, features_dict=snap_gene_feat)
+                    # Convert plot to JSON for embedding
+                    plot_json = dna_fig.to_json()
+                    results['dna_plot'] = plot_json
+                    return render_template("results.html", **results, features = snap_gene_feat)
+                except Exception as e:
+                    flash(f"Error processing DNA sequence: {e}", "error")
+
     
     return render_template('index.html', record_script=record_script, record_div=record_div)
+@app.route('/circ_plot', methods=['POST'])
+def generate_circ_plot():
+    data = request.get_json()
+    dna_input = data.get('sequence', '')
+    
+    if not dna_input:
+        return jsonify({"error": "No DNA sequence provided"})
+    
+    try:
+        # Generate features for the plot
+        features = []
+        for name, seq in snap_gene_feat.items():
+            start = dna_input.find(seq)
+            if start != -1:
+                end = start + len(seq)
+                features.append(GraphicFeature(
+                    start=start,
+                    end=end,
+                    strand=+1,  # +1 for forward strand
+                    color="#ffd700",
+                    label=name
+                ))
+        
+        # Create the circular plot
+        record = CircularGraphicRecord(sequence_length=len(dna_input), features=features)
+        #ax, _ = record.plot(figure_width=8)  # Increased figure width for better visibility
+        fig, ax = plt.subplots(figsize=(5, 5))
+        record.plot(ax=ax)
+        image_path = "static/dna_record.png"
+        fig.savefig(image_path, format="png", bbox_inches="tight")
+        plt.close(fig)
+        return image_path
+    except Exception as e:
+        return jsonify({"error": str(e)})
+
+@app.route('/lin_plot', methods=['POST'])
+def generate_lin_plot():
+    data = request.get_json()
+    dna_input = data.get('sequence', '')
+    
+    if not dna_input:
+        return jsonify({"error": "No DNA sequence provided"})
+    
+    try:
+        # Generate features for the plot
+        features = []
+        for name, seq in snap_gene_feat.items():
+            start = dna_input.find(seq)
+            if start != -1:
+                end = start + len(seq)
+                features.append(GraphicFeature(
+                    start=start,
+                    end=end,
+                    strand=+1,  # +1 for forward strand
+                    color="#ffd700",
+                    label=name
+                ))
+        
+        # Create the circular plot
+        record = GraphicRecord(sequence_length=len(dna_input), features=features)
+        #ax, _ = record.plot(figure_width=8)  # Increased figure width for better visibility
+        fig, ax = plt.subplots(figsize=(5, 5))
+        record.plot(ax=ax)
+        image_path = "static/dna_linear_record.png"
+        fig.savefig(image_path, format="png", bbox_inches="tight")
+        plt.close(fig)
+        return image_path
+    except Exception as e:
+        return jsonify({"error": str(e)})
+
+@app.route('/static/images/<filename>')
+def get_image(filename):
+    return send_from_directory(app.config["UPLOAD_FOLDER"], filename)
 @app.route('/help')
 def help_page():
     return render_template("help.html")
@@ -140,6 +254,16 @@ def help_examples():
 def help_functions():
     return "<h1>Functions</h1><p>Understand the different features and tools available.</p>"
 
+
+@app.route('/save_features', methods=['POST'])
+def save_features():
+    features = request.json
+    try:
+        with open('features.json', 'w') as f:
+            json.dump(features, f)
+        return jsonify({"status": "success"})
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)})
 
 #Function to read a fasta file and parse DNA sequence
 def read_fasta(file_path):
@@ -205,7 +329,44 @@ def fetch_sequence_from_ncbi(accession_number, email):
             raise Exception("Accession number not found!")
     else:
         raise Exception("Failed to search for accession number!")
-    
+
+
+#to be able to go back and forth in the visualized sequence
+# + visualize annotated features
+
+@app.route('/update_dna_view', methods=['POST'])
+def update_dna_view():
+    try:
+        data = request.get_json()
+        sequence = data.get('sequence', '')
+        window_start = data.get('window_start', 0)
+        window_size = data.get('window_size', 150)
+        
+        if not sequence:
+            return jsonify({"error": "No sequence provided"})
+        
+        # Create updated visualization
+        fig = create_dna_figure(
+            sequence=sequence,
+            window_start=window_start,
+            window_size=window_size,
+            features_dict=snap_gene_feat
+        )
+        
+        return jsonify(fig.to_dict())
+    except Exception as e:
+        return jsonify({"error": str(e)})
+
+@app.route('/load_features', methods=['GET'])
+def load_features():
+    try:
+        with open('snap_gene_features.txt') as json_file:
+            features = json.load(json_file)
+        return jsonify(features)
+    except FileNotFoundError:
+        return jsonify({})
+    except Exception as e:
+        return jsonify({"error": str(e)})
 
 if __name__ == '__main__':
     app.run(debug=True, threaded=False)
