@@ -9,12 +9,12 @@ To achieve the goal the following parts will be implemented:
 * Web-based frontend (Maja Lobermeier)
   
 ## Functionalities
-### Data Sources (Maja Lobermeier)
+### Data Sources (Maja Lobermeier, Dinara Karakulova)
 The data will be sourced from open datasets:
-* REBASE
+* SnapGene
 * NCBI (Human Reference Genome)
 
-### Input Data 
+### Input Data (Maja Lobermeier)
 * The system must be able to read input text data/ data from a text file containing DNA sequence of interest either as a 5’- or 3’-strand, as a plasmid, or as linear DNA (Maja Lobermeier)
 * The system can automatically annotate widely-known consensus sequences/restriction sites/reporter genes/purification tags
 * The system allows manual annotations of genes/sequences
@@ -25,7 +25,7 @@ The data will be sourced from open datasets:
 ### Data Storage and Handling
 
 
-### Statistical analysis
+### Statistical analysis (Salman)
 * Statistics concerning the DNA/AA sequence:
   * The amino acid sequence has statistics about pI of the protein, AA composition in %, molecular weight, and enzyme restriction sites 
   * GC content in DNA
