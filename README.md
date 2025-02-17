@@ -29,7 +29,7 @@ The data will be sourced from open datasets:
 * Statistics concerning the DNA/AA sequence:
   * The amino acid sequence has statistics about pI of the protein, AA composition in %, molecular weight, and enzyme restriction sites 
   * GC content in DNA
-* Primer design 
+* Primer design (Sayna Boroushaki)
   * Annealing temperature
   * enzyme restriction sites in DNA
   * results downloadable as csv 
