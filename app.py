@@ -437,7 +437,7 @@ def help_examples():
 
 @app.route('/help/functions')
 def help_functions():
-    return "<h1>Functions</h1><p>Understand the different features and tools available.</p>"
+    return render_template("functions.html")
 
 
 @app.route('/save_features', methods=['POST'])

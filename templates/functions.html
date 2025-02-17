@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Help & Features</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f8f8f8;
+            margin: 0;
+            padding: 0;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 40px auto;
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            text-align: center;
+            color: #05745c;
+            font-size: 36px;
+            margin-bottom: 20px;
+        }
+
+        h2 {
+            color: #05745c;
+            font-size: 26px;
+            border-bottom: 2px solid #05745c;
+            padding-bottom: 5px;
+            margin-top: 30px;
+        }
+
+        p {
+            font-size: 18px;
+            margin-bottom: 15px;
+        }
+
+        ul {
+            font-size: 18px;
+            list-style-type: none;
+            padding-left: 0;
+        }
+
+        ul li {
+            background: #e6f2ef;
+            padding: 12px;
+            margin-bottom: 8px;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+        }
+
+        ul li::before {
+            content: "✔"; /* Checkmark icon */
+            color: #05745c;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+
+        pre {
+            background: #f1f1f1;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 16px;
+            overflow-x: auto;
+            color: #333;
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-top: 30px;
+            font-size: 16px;
+            text-decoration: none;
+            color: #05745c;
+            font-weight: bold;
+        }
+
+        .back-link:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Functions</h1>
+
+        <h2>Navigation</h2>
+        <p>Use the "Previous" and "Next" buttons to move through the sequence in increments. This makes it easy to browse different regions without losing track of annotations.</p>
+
+        <h2>Annotated Features</h2>
+        <ul>
+            <li>Important regions of the DNA (like promoters and signal sequences) are highlighted above the sequence.</li>
+            <li>Each feature is color-coded and labeled with its name and exact position for quick identification.</li>
+        </ul>
+
+        <h2>Feature Table</h2>
+        <p>Below the sequence, you’ll find a feature table listing all annotated elements along with their start and end positions.</p>
+        <p>This gives a clear, structured overview of the features present in the displayed section.</p>
+
+        <h2>Viewing Options</h2>
+        <ul>
+            <li><strong>Linear DNA View:</strong> Shows only the annotated features as a simple map, without displaying the full nucleotide sequence.</li>
+            <li><strong>Circular DNA View:</strong> Provides a circular map of the sequence, which is especially useful for plasmids and circular genomes.</li>
+        </ul>
+
+        <h2>Primer Functions</h2>
+        <ul>
+            <li><strong>primer.complement_sequence:</strong> Returns the complementary sequence of the given primer.</li>
+            <li><strong>primer.gc_content:</strong> Calculates the percentage of guanine (G) and cytosine (C) bases in the primer.</li>
+            <li><strong>primer.tm:</strong> Determines the melting temperature (Tm), which is the temperature at which half of the DNA duplex dissociates.</li>
+            <li><strong>primer.GC_clamp:</strong> Checks if the first and last two bases of the primer are G or C, improving primer stability.</li>
+            <li><strong>primer.hair_pin:</strong> Uses the Rabin-Karp algorithm to detect complementary regions that can form a hairpin structure.</li>
+            <li><strong>primer.double_binding:</strong> Detects complementary regions in the sequence that may lead to dimer formation.</li>
+        </ul>
+
+        <h2>Primer Design & Analysis</h2>
+        <ul>
+            <li><strong>primer_analysis:</strong> Generates a table containing all analytical data on the primers.</li>
+            <li><strong>Primer Validation:</strong> Checks if the primers exist and computes the length of the amplicon.</li>
+        </ul>
+
+        <h2>Lysis Analysis</h2>
+        <p>Illustrates which restriction enzymes cut the given DNA sequence.</p>
+
+        <h2>Statistical Analysis</h2>
+        <ul>
+            <li><strong>gc_content:</strong> Determines the proportion of guanine (G) and cytosine (C) bases in the provided DNA sequence.</li>
+            <li><strong>find_orfs:</strong> Identifies Open Reading Frames (ORFs) starting with ATG and ending with a stop codon.</li>
+            <li><strong>translate_dna_to_protein:</strong> Converts a DNA sequence into its corresponding protein sequence.</li>
+            <li><strong>analyze_protein:</strong> Calculates protein properties, including isoelectric point (pI), molecular weight, and amino acid composition.</li>
+            <li><strong>plot_amino_acid_composition:</strong> Generates a pie chart of amino acid composition.</li>
+        </ul>
+
+        <h2>Database Functions</h2>
+        <ul>
+            <li><strong>save_dna_sequence:</strong> Stores a DNA sequence and its description in the database.</li>
+            <li><strong>save_gc_content:</strong> Calculates and saves the GC content of a sequence.</li>
+            <li><strong>save_orfs:</strong> Detects ORFs and stores their start and stop positions.</li>
+            <li><strong>save_protein_sequence:</strong> Stores the translated protein sequence.</li>
+            <li><strong>save_protein_analysis:</strong> Saves protein properties like molecular weight and isoelectric point.</li>
+            <li><strong>save_visualization:</strong> Stores generated visualization files for reference.</li>
+            <li><strong>close_db:</strong> Ensures all transactions are committed and closes the database connection.</li>
+        </ul>
+
+        <p class="back-link"><a href="/help">Back to Help Page</a></p>
+    </div>
+
+</body>
+</html>
