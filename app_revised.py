@@ -633,6 +633,9 @@ def download_results():
         conn = sqlite3.connect('Python_Project.db')
         cursor = conn.cursor()
 
+        # Ensure the directory exists
+        os.makedirs("static/downloads", exist_ok=True)
+
         # Query all data from the database
         cursor.execute("""
             SELECT d.id, d.sequence, d.description, d.created_at, 
