@@ -34,11 +34,6 @@ The data will be sourced from open datasets:
   * enzyme restriction sites in DNA
   * results downloadable as csv 
 
-* Statistics concerning the platform:
-  * Popular DNA sequences (most uploaded or referenced) 
-  * Demographic data of people (customers/patients/…)
-  * Statistics of user number per day/hour
-
 ### Visualization (Dinara Karakulova)
 * The system can visualize the sequence as a linear 
   ![Linear DNA map with annotations](linear_DNA_annot.png)
