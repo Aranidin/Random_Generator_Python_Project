@@ -1,6 +1,7 @@
-from flask import Flask, render_template, request, flash, jsonify, send_from_directory
+from flask import Flask, render_template, request, flash, jsonify, send_from_directory, redirect
 from dna_features_viewer import GraphicFeature, CircularGraphicRecord, GraphicRecord
 from Bio import SeqIO
+from Bio.Seq import Seq
 from io import StringIO
 import os
 import requests
@@ -10,6 +11,9 @@ import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 import json
 import numpy as np
+from Bio.Restriction import *
+import primer_design_module as pr_d
+
 from dna_backend import (
     read_dna_from_text_file,
     gc_content,
@@ -23,6 +27,9 @@ from dna_backend import (
     processing_sequence,
     create_dna_figure,
 )
+import main_primer
+from Bio.SeqUtils import MeltingTemp as mt
+
 matplotlib.use('Agg') # for import of matplotlib non-interactive plots
 
 app = Flask(__name__)
@@ -545,6 +552,72 @@ def load_features():
         return jsonify({})
     except Exception as e:
         return jsonify({"error": str(e)})
+
+
+@app.route('/primer_design', methods=['POST'])
+def primer_design():
+    try:
+        dna_sequence = request.form['dna_sequence']
+        forward_primer = request.form['forward_primer']
+        reverse_primer = request.form['reverse_primer']
+
+        # Validate primers
+        if not all(base.upper() in 'ATCG' for base in forward_primer):
+            flash('Forward primer contains invalid bases. Use only A, T, C, G.', 'error')
+            return redirect(request.referrer)
+
+        if not all(base.upper() in 'ATCG' for base in reverse_primer):
+            flash('Reverse primer contains invalid bases. Use only A, T, C, G.', 'error')
+            return redirect(request.referrer)
+
+        # Check if primers exist in sequence
+        if forward_primer.upper() not in dna_sequence.upper():
+            flash('Forward primer not found in the DNA sequence.', 'error')
+            return redirect(request.referrer)
+
+        if reverse_primer.upper() not in dna_sequence.upper():
+            flash('Reverse primer not found in the DNA sequence.', 'error')
+            return redirect(request.referrer)
+
+        # Create primer design object
+        primer_design = pr_d.primer_design(Seq(dna_sequence), forward_primer, reverse_primer)
+        
+        # Get primer analysis results
+        analysis_results = primer_design.primer_analysis()
+        amplicon = primer_design.amplicon
+        
+        # Perform restriction analysis
+        lysis = pr_d.lysis_analysis(amplicon)
+
+        # Prepare analysis results
+        primer_results = {
+            'forward_primer': {
+                'sequence': forward_primer,
+                'length': len(forward_primer),
+                'gc_content': gc_content(forward_primer),
+                'tm': round(mt.Tm_NN(forward_primer), 1)
+            },
+            'reverse_primer': {
+                'sequence': reverse_primer,
+                'length': len(reverse_primer),
+                'gc_content': gc_content(reverse_primer),
+                'tm': round(mt.Tm_NN(reverse_primer), 1)
+            },
+            'amplicon': str(amplicon),
+            'amplicon_length': len(amplicon),
+            'restriction_analysis': {
+                'single_cut': lysis.single_cut_enzymes,
+                'multi_cut': lysis.multi_cut_enzymes
+            }
+        }
+
+        return render_template('primer_results.html', 
+                             results=primer_results, 
+                             dna_sequence=dna_sequence)
+
+    except Exception as e:
+        flash(f'Error in primer analysis: {str(e)}', 'error')
+        return redirect(request.referrer)
 
 if __name__ == '__main__':
     app.run(debug=True, threaded=False)
