@@ -169,15 +169,31 @@
     
     <div id="orfs" class="tab">
         <h3>Open Reading Frames (ORFs):</h3>
-        {% if orfs %}
-            <ul>
+        <table border="1" class="fixed" style="border-collapse: collapse; width: 100%; text-align: center; table-layout: fixed;">
+            <col width="50px" />
+            <col width="50px" />
+            <col width="100px" />
+            <thead>
+                <tr>
+                    <th>Start Position</th>
+                    <th>End Position</th>
+                    <th>Sequence</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if orfs %}
                 {% for orf in orfs %}
-                    <li>{{ orf }}</li>
+                <tr>
+                    <td>{{ orf[1] }}</td>
+                    <td>{{ orf[2] }}</td>
+                    <td style="word-break: break-word; white-space: normal; text-align: left;">{{ orf[0] }}</td>
+                </tr>
                 {% endfor %}
-            </ul>
-        {% else %}
-            <p>No ORFs found in the sequence.</p>
-        {% endif %}
+                {% else %}
+                    <p>No ORFs found in the sequence.</p>
+                {% endif %}
+            </tbody>
+        </table>
     </div>
     
     <div id="protein_sequence" class="tab">
