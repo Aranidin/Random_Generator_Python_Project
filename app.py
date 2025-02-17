@@ -213,7 +213,7 @@ def home():
                     label=name
                     ))
             if not is_valid_dna_sequence(dna_input):
-                flash("Invalid DNA sequence, only A, T, C, G, U, and N are allowed!", "error")
+                print("Invalid DNA sequence, only A, T, C, G, U, and N are allowed!", "error")
             elif len(dna_input) > 1000:
                 flash("Sequence length exceeds 1000 bases, please reduce it!", "error")
             else:
@@ -278,8 +278,8 @@ def home():
         if accession_number:
             if not is_valid_accession_number(accession_number):
                 flash("Invalid accession number, try again!", "error")
-            else:
-                flash("Valid accession number!", "validation")
+            # else:
+            #     flash("Valid accession number!", "validation")
         
         if dna_input:
             if not is_valid_dna_sequence(dna_input):
@@ -288,7 +288,7 @@ def home():
             if len(dna_input) > 1000:
                 flash("Only sequences with a max. length of 1000 allowed!")
             else:
-                flash("Success!", "validation")
+                #flash("Success!", "validation")
                 try:
                     #results = processing_sequence(dna_input)
                     results = processing_sequence(dna_input)
