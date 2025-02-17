@@ -39,7 +39,7 @@ The data will be sourced from open datasets:
   * Demographic data of people (customers/patients/…)
   * Statistics of user number per day/hour
 
-### Visualization
+### Visualization (Dinara Karakulova)
 * The system can visualize the sequence as a linear 
   ![Linear DNA map with annotations](linear_DNA_annot.png)
 
@@ -48,7 +48,7 @@ The data will be sourced from open datasets:
   <img src="plasmid_annot.png" width="500" height="400"/>
   
   
-* Visualization for binding of primer on DNA
+
 * Download images as .png format
 ## Timeline
 ![Image off the project timeline](timeline.png)
