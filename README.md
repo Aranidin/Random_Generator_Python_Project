@@ -6,16 +6,16 @@ To achieve the goal the following parts will be implemented:
 * Input: Accept DNA sequences (text/file), auto/manual annotate, translate to AA, and import from NCBI.
 * Statistics: pI, AA composition, GC content, primer annealing temp, and user/platform trends.
 * Visualization: Linear/plasmid maps and primer binding sites.
-* Web-based frontend
+* Web-based frontend (Maja Lobermeier)
   
 ## Functionalities
-### Data Sources
+### Data Sources (Maja Lobermeier)
 The data will be sourced from open datasets:
 * REBASE
 * NCBI (Human Reference Genome)
 
-### Input Data
-* The system must be able to read input text data/ data from a text file containing DNA sequence of interest either as a 5’- or 3’-strand, as a plasmid, or as linear DNA 
+### Input Data 
+* The system must be able to read input text data/ data from a text file containing DNA sequence of interest either as a 5’- or 3’-strand, as a plasmid, or as linear DNA (Maja Lobermeier)
 * The system can automatically annotate widely-known consensus sequences/restriction sites/reporter genes/purification tags
 * The system allows manual annotations of genes/sequences
 * The system can translate the DNA sequence to encoded amino acid (AA) sequence
