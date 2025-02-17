@@ -1,12 +1,15 @@
-from flask import Flask, render_template, request, flash
-from dna_features_viewer import GraphicFeature, GraphicRecord
-from bokeh.embed import components, file_html
-from bokeh.resources import CDN
+from flask import Flask, render_template, request, flash, jsonify, send_from_directory
+from dna_features_viewer import GraphicFeature, CircularGraphicRecord, GraphicRecord
 from Bio import SeqIO
 from io import StringIO
 import os
 import requests
 import matplotlib
+import matplotlib.pyplot as plt
+import plotly.graph_objects as go
+from plotly.subplots import make_subplots
+import json
+import numpy as np
 from dna_backend import (
     read_dna_from_text_file,
     gc_content,
@@ -17,19 +20,31 @@ from dna_backend import (
     plot_orf_lengths,
     plot_amino_acid_composition,
     process_dna_file,
-    processing_sequence
+    processing_sequence,
+    create_dna_figure,
 )
+matplotlib.use('Agg') # for import of matplotlib non-interactive plots
 
 app = Flask(__name__)
 app.config["UPLOAD_FOLDER"] = "uploads" #folder for file uploads
 app.secret_key = "thinkofsomethingsecret" #secret key
+app.config["UPLOAD_FOLDER"] = "static/images"
+os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)  # Ensure folder exists
+
+# load annotations of DNA sequences
+with open('snap_gene_features.txt') as json_file:
+    snap_gene_feat = json.load(json_file)
+
+# folders for static linear and circular plots
+linear_path = os.path.join(app.config["UPLOAD_FOLDER"], "dna_linear_record.png")
+linear_path_circ = os.path.join(app.config["UPLOAD_FOLDER"], "dna_circular_record.png")
 
 @app.route('/', methods=['GET', 'POST'])
 def home():
-    record_script, record_div = None, None  # Initialize variables to prevent errors if no plot
+    record_script, record_div = None, None  #  prevent errors if no plot
     dna_input = None
     results = {}  # Initialize results dictionary to store processing outputs
-
+    
     if request.method == 'POST':
         print("Post request received") #Debugging
 
@@ -53,6 +68,50 @@ def home():
                 else:
                     #perform sequence analysis
                     results = processing_sequence(dna_input)
+                    # Annotate DNA Features
+                    features = []
+                    for name, seq in snap_gene_feat.items():
+                        start = dna_input.find(seq)
+                        if start != -1:
+                            end = start + len(seq)
+                            features.append(GraphicFeature(
+                            start=start,
+                            end=end,
+                            strand=+1,
+                            color="#ffd700",
+                            label=name
+                            ))
+                    # Make linear static DNA Plot with annotations 
+                    # (Adapted from DnaFeaturesViewer README)
+                    record = GraphicRecord(sequence_length=len(dna_input), features=features)
+                    fig, (ax, ax2) = plt.subplots(2,1,figsize=(10, 3), sharex=True, gridspec_kw={"height_ratios": [4, 1]})
+                    record.plot(ax=ax)
+
+                    # Visualize local GC content  (Adapted from DnaFeaturesViewer README)
+                    gc_local = lambda s: 100.0 * len([c for c in s if c in "GC"]) / 50
+                    xx = np.arange(len(dna_input) - 50)
+                    yy = [gc_local(dna_input[x : x + 50]) for x in xx]
+                    ax2.fill_between(xx + 25, yy, alpha=0.3)
+                    ax2.set_ylim(bottom=0)
+                    ax2.set_ylabel("GC(%)")
+                    linear_path = os.path.join(app.config["UPLOAD_FOLDER"], "dna_linear_record.png")
+                    plt.savefig(linear_path, dpi=300, bbox_inches="tight", format="png")
+                    plt.close(fig)
+
+                    # Make circular DNA Plot with annotations
+                    # (Adapted from DnaFeaturesViewer README)
+                    record_circ = CircularGraphicRecord(sequence_length=len(dna_input), features=features)
+                    fig_circ, ax_circ= plt.subplots(figsize=(10,2))
+                    record_circ.plot(ax=ax_circ)
+                    linear_path_circ = os.path.join(app.config["UPLOAD_FOLDER"], "dna_circular_record.png")
+                    plt.savefig(linear_path_circ, dpi=200, bbox_inches="tight", format="png")
+                    plt.close(fig_circ)
+
+                    
+                    results['linear_plot'] = 'dna_linear_record.png'
+                    results['dna_sequence'] = dna_input
+                    results['features'] = features
+                    results['circular_plot'] = 'dna_circular_record.png'
                     return render_template("results.html", **results)
             except Exception as e:
                 flash(f"Error fetching NCBI sequence: {e}", "error")                      
@@ -77,7 +136,51 @@ def home():
                try:  
                 #Using utility function from dna_backend
                 flash("FASTA file upload and parsing successful!", "validation") 
+                dna_input = read_fasta(file_path)
                 results = process_dna_file(file_path)
+                features = []
+                for name, seq in snap_gene_feat.items():
+                    start = dna_input.find(seq)
+                    if start != -1:
+                        end = start + len(seq)
+                        features.append(GraphicFeature(
+                        start=start,
+                        end=end,
+                        strand=+1,
+                        color="#ffd700",
+                        label=name
+                        ))
+                # Make linear static DNA Plot with annotations 
+                # (Adapted from DnaFeaturesViewer README)
+                record = GraphicRecord(sequence_length=len(dna_input), features=features)
+                fig, (ax, ax2) = plt.subplots(2,1,figsize=(10, 3), sharex=True, gridspec_kw={"height_ratios": [4, 1]})
+                record.plot(ax=ax)
+
+                # Visualize local GC content  (Adapted from DnaFeaturesViewer README)
+                gc_local = lambda s: 100.0 * len([c for c in s if c in "GC"]) / 50
+                xx = np.arange(len(dna_input) - 50)
+                yy = [gc_local(dna_input[x : x + 50]) for x in xx]
+                ax2.fill_between(xx + 25, yy, alpha=0.3)
+                ax2.set_ylim(bottom=0)
+                ax2.set_ylabel("GC(%)")
+                linear_path = os.path.join(app.config["UPLOAD_FOLDER"], "dna_linear_record.png")
+                plt.savefig(linear_path, dpi=300, bbox_inches="tight", format="png")
+                plt.close(fig)
+
+                # Make circular DNA Plot with annotations
+                # (Adapted from DnaFeaturesViewer README)
+                record_circ = CircularGraphicRecord(sequence_length=len(dna_input), features=features)
+                fig_circ, ax_circ= plt.subplots(figsize=(10,3))
+                record_circ.plot(ax=ax_circ)
+                linear_path_circ = os.path.join(app.config["UPLOAD_FOLDER"], "dna_circular_record.png")
+                plt.savefig(linear_path_circ, dpi=300, bbox_inches="tight", format="png")
+                plt.close(fig_circ)
+
+                    
+                results['linear_plot'] = 'dna_linear_record.png'
+                results['dna_sequence'] = dna_input
+                results['features'] = features
+                results['circular_plot'] = 'dna_circular_record.png'
                 return(render_template("results.html", **results))
                except Exception as e:
                    flash(f"Error reading FASTA file: {e}", "error")
@@ -90,6 +193,18 @@ def home():
             print(dna_input)  # Print the input in the terminal for debugging
         # Validate the DNA sequence input
         if dna_input:
+            features = []
+            for name, seq in snap_gene_feat.items():
+                start = dna_input.find(seq)
+                if start != -1:
+                    end = start + len(seq)
+                    features.append(GraphicFeature(
+                    start=start,
+                    end=end,
+                    strand=+1,  # +1 for forward strand
+                    color="#ffd700",
+                    label=name
+                    ))
             if not is_valid_dna_sequence(dna_input):
                 flash("Invalid DNA sequence, only A, T, C, G, U, and N are allowed!", "error")
             elif len(dna_input) > 1000:
@@ -99,6 +214,50 @@ def home():
                 try:
                     # Perform sequence analysis (e.g., GC content, ORF detection, etc.)
                     results = processing_sequence(dna_input)
+                    # Annotate DNA Features
+                    features = []
+                    for name, seq in snap_gene_feat.items():
+                        start = dna_input.find(seq)
+                        if start != -1:
+                            end = start + len(seq)
+                            features.append(GraphicFeature(
+                            start=start,
+                            end=end,
+                            strand=+1,
+                            color="#ffd700",
+                            label=name
+                            ))
+                    # Make linear static DNA Plot with annotations 
+                    # (Adapted from DnaFeaturesViewer README)
+                    record = GraphicRecord(sequence_length=len(dna_input), features=features)
+                    fig, (ax, ax2) = plt.subplots(2,1,figsize=(10, 3), sharex=True, gridspec_kw={"height_ratios": [4, 1]})
+                    record.plot(ax=ax)
+
+                    # Visualize local GC content  (Adapted from DnaFeaturesViewer README)
+                    gc_local = lambda s: 100.0 * len([c for c in s if c in "GC"]) / 50
+                    xx = np.arange(len(dna_input) - 50)
+                    yy = [gc_local(dna_input[x : x + 50]) for x in xx]
+                    ax2.fill_between(xx + 25, yy, alpha=0.3)
+                    ax2.set_ylim(bottom=0)
+                    ax2.set_ylabel("GC(%)")
+                    linear_path = os.path.join(app.config["UPLOAD_FOLDER"], "dna_linear_record.png")
+                    plt.savefig(linear_path, dpi=300, bbox_inches="tight", format="png")
+                    plt.close(fig)
+
+                    # Make circular DNA Plot with annotations
+                    # (Adapted from DnaFeaturesViewer README)
+                    record_circ = CircularGraphicRecord(sequence_length=len(dna_input), features=features)
+                    fig_circ, ax_circ= plt.subplots(figsize=(10,3))
+                    record_circ.plot(ax=ax_circ)
+                    linear_path_circ = os.path.join(app.config["UPLOAD_FOLDER"], "dna_circular_record.png")
+                    plt.savefig(linear_path_circ, dpi=300, bbox_inches="tight", format="png")
+                    plt.close(fig_circ)
+
+                    
+                    results['linear_plot'] = 'dna_linear_record.png'
+                    results['dna_sequence'] = dna_input
+                    results['features'] = features
+                    results['circular_plot'] = 'dna_circular_record.png'
                     return render_template("results.html", **results)
                 except Exception as e:
                     flash(f"Error processing DNA sequence: {e}", "error")
@@ -123,8 +282,141 @@ def home():
                 flash("Only sequences with a max. length of 1000 allowed!")
             else:
                 flash("Success!", "validation")
+                try:
+                    #results = processing_sequence(dna_input)
+                    results = processing_sequence(dna_input)
+
+                    # Create DNA visualization
+                    dna_fig = create_dna_figure(dna_input, features_dict=snap_gene_feat)
+                    # Convert plot to JSON for embedding
+                    plot_json = dna_fig.to_json()
+                    results['dna_plot'] = plot_json
+                    results = processing_sequence(dna_input)
+                    # Annotate DNA Features
+                    features = []
+                    for name, seq in snap_gene_feat.items():
+                        start = dna_input.find(seq)
+                        if start != -1:
+                            end = start + len(seq)
+                            features.append(GraphicFeature(
+                            start=start,
+                            end=end,
+                            strand=+1,
+                            color="#ffd700",
+                            label=name
+                            ))
+                    # Make linear static DNA Plot with annotations 
+                    # (Adapted from DnaFeaturesViewer README)
+                    record = GraphicRecord(sequence_length=len(dna_input), features=features)
+                    fig, (ax, ax2) = plt.subplots(2,1,figsize=(10, 3), sharex=True, gridspec_kw={"height_ratios": [4, 1]})
+                    record.plot(ax=ax)
+
+                    # Visualize local GC content  (Adapted from DnaFeaturesViewer README)
+                    gc_local = lambda s: 100.0 * len([c for c in s if c in "GC"]) / 50
+                    xx = np.arange(len(dna_input) - 50)
+                    yy = [gc_local(dna_input[x : x + 50]) for x in xx]
+                    ax2.fill_between(xx + 25, yy, alpha=0.3)
+                    ax2.set_ylim(bottom=0)
+                    ax2.set_ylabel("GC(%)")
+                    linear_path = os.path.join(app.config["UPLOAD_FOLDER"], "dna_linear_record.png")
+                    plt.savefig(linear_path, dpi=300, bbox_inches="tight", format="png")
+                    plt.close(fig)
+
+                    # Make circular DNA Plot with annotations
+                    # (Adapted from DnaFeaturesViewer README)
+                    record_circ = CircularGraphicRecord(sequence_length=len(dna_input), features=features)
+                    fig_circ, ax_circ= plt.subplots(figsize=(10,3))
+                    record_circ.plot(ax=ax_circ)
+                    linear_path_circ = os.path.join(app.config["UPLOAD_FOLDER"], "dna_circular_record.png")
+                    plt.savefig(linear_path_circ, dpi=300, bbox_inches="tight", format="png")
+                    plt.close(fig_circ)
+
+                    
+                    results['linear_plot'] = 'dna_linear_record.png'
+                    results['dna_sequence'] = dna_input
+                    results['features'] = features
+                    results['circular_plot'] = 'dna_circular_record.png'
+                    return render_template("results.html", **results, features = snap_gene_feat)
+                except Exception as e:
+                    flash(f"Error processing DNA sequence: {e}", "error")
+
     
     return render_template('index.html', record_script=record_script, record_div=record_div)
+
+@app.route('/circ_plot', methods=['POST'])
+def generate_circ_plot():
+    data = request.get_json()
+    dna_input = data.get('sequence', '')
+    
+    if not dna_input:
+        return jsonify({"error": "No DNA sequence provided"})
+    
+    try:
+        # Generate features for the plot
+        features = []
+        for name, seq in snap_gene_feat.items():
+            start = dna_input.find(seq)
+            if start != -1:
+                end = start + len(seq)
+                features.append(GraphicFeature(
+                    start=start,
+                    end=end,
+                    strand=+1,
+                    color="#ffd700",
+                    label=name
+                ))
+        
+        # Create the circular plot
+        record = CircularGraphicRecord(sequence_length=len(dna_input), features=features)
+        fig, ax = plt.subplots(figsize=(8, 8))  # Made square and larger for better circular visualization
+        ax.set_title("Circular DNA Map")
+        record.plot(ax=ax)
+        
+        # Save to the same directory as linear plot
+        image_path = os.path.join(app.config["UPLOAD_FOLDER"], "dna_circular_record.png")
+        plt.savefig(image_path, dpi=300, bbox_inches="tight", format="png")
+        plt.close(fig)
+        
+        return jsonify({"success": True})
+    except Exception as e:
+        return jsonify({"error": str(e)})
+@app.route('/lin_plot', methods=['POST'])
+def generate_lin_plot():
+    data = request.get_json()
+    dna_input = data.get('sequence', '')
+    
+    if not dna_input:
+        return jsonify({"error": "No DNA sequence provided"})
+    
+    try:
+        # Generate features for the plot
+        features = []
+        for name, seq in snap_gene_feat.items():
+            start = dna_input.find(seq)
+            if start != -1:
+                end = start + len(seq)
+                features.append(GraphicFeature(
+                    start=start,
+                    end=end,
+                    strand=+1,  # +1 for forward strand
+                    color="#ffd700",
+                    label=name
+                ))
+        
+        # Create the linear plot
+        record = GraphicRecord(sequence_length=len(dna_input), features=features)
+        fig, ax = plt.subplots(figsize=(5, 5))
+        record.plot(ax=ax)
+        image_path = os.path.join(app.config["UPLOAD_FOLDER"], "dna_linear_record.png")
+        plt.savefig(image_path, dpi=300, bbox_inches="tight", format="png")
+        plt.close(fig)
+        return jsonify({"image_path": image_path})
+    except Exception as e:
+        return jsonify({"error": str(e)})
+
+@app.route('/static/images/<filename>')
+def get_image(filename):
+    return send_from_directory(app.config["UPLOAD_FOLDER"], filename)
 @app.route('/help')
 def help_page():
     return render_template("help.html")
@@ -140,6 +432,16 @@ def help_examples():
 def help_functions():
     return "<h1>Functions</h1><p>Understand the different features and tools available.</p>"
 
+
+@app.route('/save_features', methods=['POST'])
+def save_features():
+    features = request.json
+    try:
+        with open('features.json', 'w') as f:
+            json.dump(features, f)
+        return jsonify({"status": "success"})
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)})
 
 #Function to read a fasta file and parse DNA sequence
 def read_fasta(file_path):
@@ -205,7 +507,44 @@ def fetch_sequence_from_ncbi(accession_number, email):
             raise Exception("Accession number not found!")
     else:
         raise Exception("Failed to search for accession number!")
-    
+
+
+#to be able to go back and forth in the visualized sequence
+# + visualize annotated features
+
+@app.route('/update_dna_view', methods=['POST'])
+def update_dna_view():
+    try:
+        data = request.get_json()
+        sequence = data.get('sequence', '')
+        window_start = data.get('window_start', 0)
+        window_size = data.get('window_size', 150)
+        
+        if not sequence:
+            return jsonify({"error": "No sequence provided"})
+        
+        # Create updated visualization
+        fig = create_dna_figure(
+            sequence=sequence,
+            window_start=window_start,
+            window_size=window_size,
+            features_dict=snap_gene_feat
+        )
+        
+        return jsonify(fig.to_dict())
+    except Exception as e:
+        return jsonify({"error": str(e)})
+
+@app.route('/load_features', methods=['GET'])
+def load_features():
+    try:
+        with open('snap_gene_features.txt') as json_file:
+            features = json.load(json_file)
+        return jsonify(features)
+    except FileNotFoundError:
+        return jsonify({})
+    except Exception as e:
+        return jsonify({"error": str(e)})
 
 if __name__ == '__main__':
     app.run(debug=True, threaded=False)
