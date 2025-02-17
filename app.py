@@ -267,7 +267,7 @@ def home():
                     results['circular_plot'] = 'dna_circular_record.png'
                     return render_template("results.html", **results)
                 except Exception as e:
-                    flash(f"Error processing DNA sequence: {e}", "error")
+                    print(f"Error processing DNA sequence: {e}", "error")
         # Validate inputs
         if email:
             if not is_valid_email(email):
@@ -286,7 +286,7 @@ def home():
                 flash("Invalid DNA sequence, only A, T, C, G, U, and N are allowed!", "error")
             #max input of 1000 bases
             if len(dna_input) > 1000:
-                flash("Only sequences with a max. length of 1000 allowed!")
+                print("Only sequences with a max. length of 1000 allowed!")
             else:
                 #flash("Success!", "validation")
                 try:
@@ -345,7 +345,7 @@ def home():
                     results['circular_plot'] = 'dna_circular_record.png'
                     return render_template("results.html", **results, features = snap_gene_feat)
                 except Exception as e:
-                    flash(f"Error processing DNA sequence: {e}", "error")
+                    print(f"Error processing DNA sequence: {e}", "error")
 
     
     return render_template('index.html', record_script=record_script, record_div=record_div)
