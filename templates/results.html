@@ -4,109 +4,297 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DNA Sequence Analysis Results</title>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
-            color: #333;
-            text-align: center;
-        }
-        .container {
-            max-width: 700px;
-            margin: 30px auto;
+            max-width: 1200px;
+            margin: 0 auto;
             padding: 20px;
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
-            text-align: left;
         }
-        h1, h3 {
-            color: #2F4F2F; /* Dark green accent */
+        
+        .tab {
+            display: none;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-top: none;
         }
-        pre, .results-box {
-            background: #eef2ee;
-            padding: 10px;
-            border-left: 5px solid #2F4F2F;
-            white-space: pre-wrap;
-            word-wrap: break-word;
-            border-radius: 5px;
-        }
-        ul {
-            list-style-type: none;
-            padding: 0;
-        }
-        li {
-            padding: 5px 0;
-        }
-        .amino-acid-list {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-        }
-        .amino-acid-item {
-            background: #eef2ee;
-            padding: 5px 10px;
-            border-radius: 5px;
-            font-size: 14px;
-        }
-        .button {
+        
+        .tab.active {
             display: block;
-            width: fit-content;
-            margin: 20px auto;
+        }
+        
+        .tabs {
+            margin-top: 20px;
+        }
+        
+        .tabs button {
             padding: 10px 20px;
-            background: #2F4F2F;
+            margin-right: 5px;
+            cursor: pointer;
+            border: 1px solid #ddd;
+            background: #f8f8f8;
+            border-bottom: none;
+        }
+        
+        .tabs button.active {
+            background: #fff;
+            border-bottom: 1px solid #fff;
+            margin-bottom: -1px;
+        }
+        
+        .navigation-controls {
+            margin: 20px 0;
+            display: flex;
+            align-items: center;
+        }
+        
+        .nav-button {
+            padding: 8px 16px;
+            margin-right: 10px;
+            background: #4CAF50;
             color: white;
-            text-decoration: none;
-            border-radius: 5px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
         }
-        .button:hover {
-            background: #3a633a;
+        
+        .nav-button:hover {
+            background: #45a049;
         }
+        
+        pre {
+            background: #f5f5f5;
+            padding: 15px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+        
+        #dna-viewer {
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin: 20px 0;
+        }
+        
+        .feature-legend {
+            margin-top: 10px;
+            padding: 10px;
+            background: #f8f8f8;
+            border-radius: 4px;
+        }
+        .circular-plot-container {
+    margin: 20px auto;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background: white;
+}
+
+#circ-dna-image {
+    display: block;
+    margin: 0 auto;
+    max-width: 800px;
+    height: auto;
+}
     </style>
 </head>
 <body>
-
-    <div class="container">
-        <h1>DNA Sequence Analysis Results</h1>
-        
-        <h3>DNA Sequence:</h3>
-        <pre>{{ dna_sequence }}</pre>
-
-        <h3>GC Content:</h3>
-        <div class="results-box">{{ gc_percentage }}%</div>
-
-        <h3>Open Reading Frames (ORFs):</h3>
-        <div class="results-box">
-            {% if orfs %}
-                <ul>
-                    {% for orf in orfs %}
-                        <li>{{ orf }}</li>
-                    {% endfor %}
-                </ul>
-            {% else %}
-                <p>No ORFs found.</p>
-            {% endif %}
-        </div>
-
-        <h3>Protein Sequence:</h3>
-        <pre>{{ protein_sequence }}</pre>
-
-        <h3>Protein Analysis:</h3>
-        <div class="results-box">
-            <ul>
-                <li><strong>Isoelectric Point (pI):</strong> {{ protein_analysis.pI }}</li>
-                <li><strong>Molecular Weight:</strong> {{ protein_analysis['Molecular Weight'] }} Da</li>
-                <li><strong>Amino Acid Composition:</strong></li>
-                <div class="amino-acid-list">
-                    {% for aa, percentage in protein_analysis['Amino Acid Percentages'].items() %}
-                        <span class="amino-acid-item">{{ aa }}: {{ '%.2f' % (percentage * 100) }}%</span>
-                    {% endfor %}
-                </div>
-            </ul>
-        </div>
-
-        <a href="{{ url_for('home') }}" class="button">Analyse another sequence</a>
+    <h1>DNA Sequence Analysis Results</h1>
+    
+    <div class="navigation-controls">
+        <button id="prev-button" class="nav-button">Previous</button>
+        <button id="next-button" class="nav-button">Next</button>
+        <span id="position-info" style="margin-left: 20px;"></span>
+    </div>
+    
+    <div id="dna-viewer"></div>
+    
+    <div class="tabs">
+        <button class="tab-button active" onclick="openTab('sequence_view')">Sequence View</button>
+        <button class="tab-button" onclick="openTab('circ-sequence_view')">Circular DNA View</button>
+        <button class="tab-button" onclick="openTab('feature_table')">Feature Table</button>
+        <button class="tab-button" onclick="openTab('orfs')">Open Reading Frames</button>
+        <button class="tab-button" onclick="openTab('protein_sequence')">Protein Sequence</button>
+        <button class="tab-button" onclick="openTab('protein_analysis')">Protein Analysis</button>
     </div>
 
+    <div id="sequence_view" class="tab active">
+        <h3>DNA Sequence:</h3>
+        
+        <div class="linear-plot-container">
+        <h3>Linear DNA Map</h3>
+        <img src="{{ url_for('static', filename='images/dna_linear_record.png') }}" 
+             alt="DNA Linear Graphic"
+             style="width: 100%; max-width: 500px; height: auto; margin: 20px auto; display: block;">
+        </div>
+        <h3>GC Content:</h3>
+        <p>{{ gc_percentage }}%</p>
+    
+    </div>
+    <input type="hidden" id="dna-sequence" value="{{ dna_sequence }}">
+
+    <div id="circ-sequence_view" class="tab">
+        <h3>Circular DNA Visualization</h3>
+        <div class="circular-plot-container">
+            <img src="{{ url_for('static', filename='images/dna_circular_record.png') }}" 
+                 alt="DNA Circular Graphic"
+                 style="width: 100%; max-width: 400px; height: auto; margin: 20px auto; display: block;">
+        </div>
+        
+    </div>
+
+    <div id="feature_table" class="tab">
+        <table border="1" style="border-collapse: collapse; width: 50%; text-align: left;">
+            <thead>
+                <tr>
+                    <th>Feature Name</th>
+                    <th>Start Position</th>
+                    <th>End Position</th>
+                    <th>Length</th>
+                </tr>
+            </thead>
+            <tbody>
+                
+                {% for feature in features %}
+                <tr>
+                    <td>{{ feature.label }}</td>
+                    <td>{{ feature.start }}</td>
+                    <td>{{ feature.end }}</td>
+                    <td>{{ feature.length }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    
+    <div id="orfs" class="tab">
+        <h3>Open Reading Frames (ORFs):</h3>
+        {% if orfs %}
+            <ul>
+                {% for orf in orfs %}
+                    <li>{{ orf }}</li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p>No ORFs found in the sequence.</p>
+        {% endif %}
+    </div>
+    
+    <div id="protein_sequence" class="tab">
+        <h3>Protein Sequence:</h3>
+        <pre>{{ protein_sequence }}</pre>
+    </div>
+    
+    <div id="protein_analysis" class="tab">
+        <h3>Protein Analysis:</h3>
+        <ul>
+            <li>Isoelectric Point (pI): {{ protein_analysis.pI }}</li>
+            <li>Molecular Weight: {{ protein_analysis['Molecular Weight'] }} Da</li>
+            <li>Amino Acid Percentages:</li>
+            <ul>
+                {% for aa, percentage in protein_analysis['Amino Acid Percentages'].items() %}
+                    <li>{{ aa }}: {{ '%.2f' % (percentage * 100) }}%</li>
+                {% endfor %}
+            </ul>
+            <div class="col-md-8">
+                <img src="{{ url_for('static', filename='images/' + aa_plot) }}" 
+                     class="img-fluid" alt="Amino Acid Composition">
+            </div>
+
+    <a href="{{ url_for('home') }}" class="button">Upload another sequence</a>
+    </div>
+    
+    <hr>
+    <a href="{{ url_for('home') }}" class="nav-button" style="text-decoration: none; display: inline-block;">Upload another file</a>
+    
+    <script>
+
+        let currentWindow = 0;
+        const windowSize = 100;
+        const sequence = {{ dna_sequence | tojson }};
+        let features = {};
+        
+        // Load features when page loads
+        fetch('/load_features')
+            .then(response => response.json())
+            .then(data => {
+                features = data;
+                // Update visualization with features
+                updateVisualization(currentWindow);
+            })
+            .catch(error => console.error('Error loading features:', error));
+            
+        function updateVisualization(windowStart) {
+            fetch('/update_dna_view', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    sequence: sequence,
+                    window_start: windowStart,
+                    window_size: windowSize,
+                    features: features
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                Plotly.newPlot('dna-viewer', data.data, data.layout);
+                document.getElementById('position-info').textContent = 
+                    `Showing bases ${windowStart + 1} to ${Math.min(windowStart + windowSize, sequence.length)} of ${sequence.length}`;
+            })
+            .catch(error => console.error('Error updating visualization:', error));
+        }
+        
+        document.getElementById('prev-button').addEventListener('click', () => {
+            if (currentWindow >= windowSize) {
+                currentWindow = Math.max(0, currentWindow - windowSize);
+                updateVisualization(currentWindow);
+            }
+        });
+        
+        document.getElementById('next-button').addEventListener('click', () => {
+            if (currentWindow + windowSize < sequence.length) {
+                currentWindow = Math.min(sequence.length - windowSize, currentWindow + windowSize);
+                updateVisualization(currentWindow);
+            }
+        });
+        
+        let circularPlotLoaded = false;
+
+  
+        function openTab(tabId) {
+    // Hide all tabs
+    document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+    document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+    
+    // Show selected tab
+    document.getElementById(tabId).classList.add('active');
+    document.querySelector(`button[onclick="openTab('${tabId}')"]`).classList.add('active');
+
+    // Load circular plot when circular view tab is selected
+    //if (tabId === 'circ-sequence_view' && !circularPlotLoaded) {
+      //  fetchCircularPlot();
+        //circularPlotLoaded = true;
+    //}
+    }
+// Automatically load Circular DNA Plot if it's the default tab
+
+
+        // Initialize DNA viewer if plot data exists
+        {% if dna_plot %}
+            var plotData = {{ dna_plot | safe }};
+            Plotly.newPlot('dna-viewer', plotData.data, plotData.layout);
+        {% endif %}
+        
+        // Initialize visualization
+        updateVisualization(0);
+        document.querySelectorAll('.tab-button').forEach(button => {
+            button.addEventListener('click', function() {
+                const tabId = this.getAttribute('onclick').match(/'([^']+)'/)[1];
+                openTab(tabId);
+            });
+        });
+    </script>
 </body>
 </html>
