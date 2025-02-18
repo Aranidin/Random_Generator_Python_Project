@@ -30,6 +30,7 @@ from dna_backend import (
 import main_primer
 from Bio.SeqUtils import MeltingTemp as mt
 
+
 matplotlib.use('Agg') # for import of matplotlib non-interactive plots
 
 app = Flask(__name__)
@@ -267,7 +268,7 @@ def home():
                     results['circular_plot'] = 'dna_circular_record.png'
                     return render_template("results.html", **results)
                 except Exception as e:
-                    print(f"Error processing DNA sequence: {e}", "error")
+                    flash(f"Error processing DNA sequence: {e}", "error")
         # Validate inputs
         if email:
             if not is_valid_email(email):
@@ -286,7 +287,7 @@ def home():
                 flash("Invalid DNA sequence, only A, T, C, G, U, and N are allowed!", "error")
             #max input of 1000 bases
             if len(dna_input) > 1000:
-                print("Only sequences with a max. length of 1000 allowed!")
+                flash("Only sequences with a max. length of 1000 allowed!")
             else:
                 #flash("Success!", "validation")
                 try:
@@ -345,7 +346,7 @@ def home():
                     results['circular_plot'] = 'dna_circular_record.png'
                     return render_template("results.html", **results, features = snap_gene_feat)
                 except Exception as e:
-                    print(f"Error processing DNA sequence: {e}", "error")
+                    flash(f"Error processing DNA sequence: {e}", "error")
 
     
     return render_template('index.html', record_script=record_script, record_div=record_div)
@@ -618,6 +619,80 @@ def primer_design():
     except Exception as e:
         flash(f'Error in primer analysis: {str(e)}', 'error')
         return redirect(request.referrer)
+
+### Database ###
+import sqlite3
+import csv
+import zipfile
+from flask import send_file, flash, redirect
+
+@app.route('/download_results', methods=['GET'])
+def download_results():
+    try:
+        # Ensure database connection
+        conn = sqlite3.connect('Python_Project.db')
+        cursor = conn.cursor()
+
+        # Query all data from the database
+        cursor.execute("""
+            SELECT d.id, d.sequence, d.description, d.created_at, 
+                   g.gc_percentage, 
+                   o.orf_sequence, o.start_position, o.end_position, 
+                   p.protein_sequence, 
+                   pa.pi, pa.molecular_weight
+            FROM dna_sequences d
+            LEFT JOIN gc_content g ON d.id = g.sequence_id
+            LEFT JOIN orfs o ON d.id = o.sequence_id
+            LEFT JOIN protein_sequences p ON d.id = p.sequence_id
+            LEFT JOIN protein_analysis pa ON d.id = pa.sequence_id
+        """)
+        records = cursor.fetchall()
+
+        # Create CSV file
+        downloads_dir = "static/downloads"
+        os.makedirs(downloads_dir, exist_ok=True)
+        csv_path = "static/downloads/dna_analysis_results.csv"
+        with open(csv_path, mode='w', newline='') as csv_file:
+            writer = csv.writer(csv_file)
+            writer.writerow(["Sequence ID", "DNA Sequence", "Description", "Created At",
+                             "GC Content (%)", "ORF Sequence", "ORF Start", "ORF End",
+                             "Protein Sequence", "pI", "Molecular Weight"])
+            for row in records:
+                writer.writerow(row)
+
+        # Create TXT file
+        txt_path = "static/downloads/dna_analysis_results.txt"
+        with open(txt_path, 'w') as txt_file:
+            txt_file.write("DNA Analysis Results\n")
+            txt_file.write("="*50 + "\n\n")
+            for record in records:
+                txt_file.write(f"Sequence ID: {record[0]}\n")
+                txt_file.write(f"DNA Sequence: {record[1]}\n")
+                txt_file.write(f"Description: {record[2]}\n")
+                txt_file.write(f"Created At: {record[3]}\n")
+                txt_file.write(f"GC Content (%): {record[4]}\n")
+                txt_file.write(f"ORF Sequence: {record[5]} (Start: {record[6]}, End: {record[7]})\n")
+                txt_file.write(f"Protein Sequence: {record[8]}\n")
+                txt_file.write(f"Isoelectric Point (pI): {record[9]}\n")
+                txt_file.write(f"Molecular Weight: {record[10]} Da\n")
+                txt_file.write("\n" + "-"*50 + "\n\n")
+
+        # Zip the results
+        zip_path = "static/downloads/dna_analysis_results.zip"
+        with zipfile.ZipFile(zip_path, 'w') as zipf:
+            zipf.write(csv_path, arcname="dna_analysis_results.csv")
+            zipf.write(txt_path, arcname="dna_analysis_results.txt")
+
+        return send_file(zip_path, as_attachment=True, download_name="dna_analysis_results.zip")
+
+    except Exception as e:
+        flash(f"Error generating download: {e}", "error")
+        return redirect('/')
+
+    finally:
+        cursor.close()
+        conn.close()
+###
 
 if __name__ == '__main__':
     app.run(debug=True, threaded=False)
