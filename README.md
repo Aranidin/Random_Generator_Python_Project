@@ -36,11 +36,11 @@ The data will be sourced from open datasets:
 
 ### Visualization (Dinara Karakulova)
 * The system can visualize the sequence as a linear 
-  ![Linear DNA map with annotations](linear_DNA_annot.png)
+  ![Linear DNA map with annotations](dna_linear_record.png)
 
   or a plasmid map.
   
-  <img src="plasmid_annot.png" width="500" height="400"/>
+  <img src="dna_circular_record.png" width="500" height="400"/>
   
   
 
