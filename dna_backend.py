@@ -14,7 +14,7 @@ from collections import Counter
 ## Database Setup
 
 # Connect to the SQLite database named 'Python_Project.db'
-conn = sqlite3.connect('Python_Project.db')
+conn = sqlite3.connect('Python_Project.db', check_same_thread=False)
 
 # Create a cursor object to execute SQL commands
 cursor = conn.cursor()
@@ -488,6 +488,35 @@ def process_dna_file(file_path):
     except Exception as e:
         print("Error in analyze_protein:", e)
         return {"error": f"analyze_protein error: {e}"}
+    ### ADDITION: Save Results to Database ###
+    try:
+        # Save DNA Sequence
+        sequence_id = save_dna_sequence(dna_sequence, "User_Provided Sequence")
+
+        # Save GC Content
+        save_gc_content(sequence_id, gc_percentage)
+
+        # Save ORFs
+        if orfs:
+            save_orfs(sequence_id, orfs)
+
+        # Save Protein Sequence
+        save_protein_sequence(sequence_id, protein_sequence)
+
+        # Save Protein Analysis
+        save_protein_analysis(sequence_id,
+                              protein_properties['pI'],
+                              protein_properties['Molecular Weight'])
+
+        # Save Amino Acid Composition Chart Path
+        save_visualization(sequence_id, "Amino Acid Composition", aa_plot_path)
+
+        print(f"✅ Results for File Sequence {sequence_id} saved to database.")
+
+    except Exception as e:
+        print(f"❌ Database Save Error: {e}")
+
+    ###
 
     # Return all results as a dictionary
     return {
@@ -539,6 +568,38 @@ def processing_sequence(dna_sequence, features_dict=None, upload_path_lin = None
     except Exception as e:
         print("Error in dna_visualization:", e)
         return {"error": f"dna_visualization error: {e}"}
+
+    ### STORE RESULTS INTO DATABASE (ADDITIONALLY) ###
+    try:
+        # Create a unique entry for the DNA sequence
+        sequence_id = save_dna_sequence(dna_sequence, "User-Provided Sequence")
+
+        # Save GC Content
+        save_gc_content(sequence_id, gc_percentage)
+
+        # Save ORFs with start & stop positions
+        if orfs:
+            save_orfs(sequence_id, orfs)
+
+        # Save Protein Sequence
+        save_protein_sequence(sequence_id, protein_sequence)
+
+        # Save Protein Analysis
+        save_protein_analysis(sequence_id,
+                              protein_properties['pI'],
+                              protein_properties['Molecular Weight'])
+
+        # Save Amino Acid Composition Chart Path
+        save_visualization(sequence_id, "Amino Acid Composition", aa_plot_path)
+
+        # Save DNA Visualization Path
+        save_visualization(sequence_id, "DNA Plot", "dna_visualization.json")
+
+        print(f"✅ Results for Sequence {sequence_id} saved to database.")
+
+    except Exception as e:
+        print("Error saving to database:", e)
+
     # Return all results as a dictionary
 
     return {
