@@ -2,7 +2,7 @@
 ## Description
 The project aims to provide streamlined visualization, annotation, and statistical insights for DNA and its translated amino acid sequences.
 To achieve the goal the following parts will be implemented:
-* Data Sources: Use REBASE and NCBI datasets.
+* Data Sources: Use SnapGene and NCBI datasets.
 * Input: Accept DNA sequences (text/file), auto/manual annotate, translate to AA, and import from NCBI.
 * Statistics: pI, AA composition, GC content, primer annealing temp, and user/platform trends.
 * Visualization: Linear/plasmid maps and primer binding sites.
@@ -47,6 +47,9 @@ The data will be sourced from open datasets:
 * Download images as .png format
 ## Timeline
 ![Image off the project timeline](timeline.png)
+
+## Acknowledgments
+![AI Usage Disclaimer](ai_usage.png)
 ## Group Details
 Group name: Random_Generator
 Group code: G05
