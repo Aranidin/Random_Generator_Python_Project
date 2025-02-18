@@ -46,8 +46,9 @@ The data will be sourced from open datasets:
   or a plasmid map.
   
   <img src="dna_circular_record.png" width="500" height="400"/>
-  
-  
+
+## Data Flow
+![Data Flowchart](flow_chart.png)
 
 * Download images as .png format
 ## Timeline
