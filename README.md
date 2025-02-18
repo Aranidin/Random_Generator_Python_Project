@@ -22,10 +22,15 @@ The data will be sourced from open datasets:
 * The system can find open reading frames in the DNA
 * The system provides the possibility to import data from data banks (NCBI)
 
-### Data Storage and Handling
+### Data Storage and Handling (Salman Soleiman Fallah)
+* The system uses a SQLite database to store and manage DNA sequence analysis results, ensuring efficient retrieval and persistence of data
+* A dictionary-based structure is implemented in parallel with the database for fast, in-memory operations during processing
+* The system allows users to download results (DNA sequence, ORFs, protein analysis, etc.) in CSV and TXT formats, packaged as a ZIP file
+* Automatic data storage is performed after each analysis, ensuring persistence for future access or export
+* The system uses SQL queries to join tables and generate comprehensive reports for download
 
 
-### Statistical analysis (Salman)
+### Statistical analysis (Salman Soleiman Fallah)
 * Statistics concerning the DNA/AA sequence:
   * The amino acid sequence has statistics about pI of the protein, AA composition in %, molecular weight, and enzyme restriction sites 
   * GC content in DNA
