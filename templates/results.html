@@ -297,7 +297,18 @@ cssCopy.primer-form {
 
         <button type="submit" class="submit-button">Analyze Primers</button>
     </form>
+<div style="text-align:center; margin-top:20px;">
+    <a href="{{ url_for('download_results') }}"
+       class="submit-button"
+       style="display: inline-block; padding: 10px 20px;
+              background-color: #05745c; color: white;
+              font-size: 14px; font-weight: normal;
+              border-radius: 4px; text-decoration: none;
+              transition: background-color 0.3s;">
+        Download All Results
+    </a>
 </div>
+
 
     <hr>
     <a href="{{ url_for('home') }}" class="nav-button" style="text-decoration: none; display: inline-block;">Upload another file</a>
